@@ -6,6 +6,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "@/src/theme/ThemeContext";
 import { ScreenHeader } from "@/src/components/ScreenHeader";
 
+// User-provided 3-panel reference image. We render each panel by clipping
+// the image inside a fixed-size container — panel 0 = Cytology, 1 = Progesterone,
+// 2 = Vaginoscope.
 const REF_IMG = "https://customer-assets.emergentagent.com/job_453e719f-8513-486c-b1fd-4be9ca8fb67d/artifacts/qmzn6gx5_Picture2.png";
 
 interface MethodCard {
@@ -13,15 +16,40 @@ interface MethodCard {
   title: string;
   subtitle: string;
   color: string;
-  icon: keyof typeof Ionicons.glyphMap;
+  panel: 0 | 1 | 2;
   available: boolean;
 }
 
 const METHODS: MethodCard[] = [
-  { key: "cytology", title: "Vaginal Exfoliative Cytology", subtitle: "Microscopic cell count analysis", color: "#7C3AED", icon: "telescope", available: true },
-  { key: "progesterone", title: "Progesterone Analysis", subtitle: "Serum hormone classification", color: "#0D9488", icon: "flask", available: true },
-  { key: "vaginoscope", title: "Vaginoscope", subtitle: "Future Module", color: "#BE185D", icon: "videocam", available: false },
+  {
+    key: "cytology",
+    title: "Vaginal Exfoliative Cytology",
+    subtitle: "Microscopic cell count analysis (PC, IC, SIC, SC, CC)",
+    color: "#7C3AED",
+    panel: 0,
+    available: true,
+  },
+  {
+    key: "progesterone",
+    title: "Progesterone Analysis",
+    subtitle: "Serum hormone classification (ng/ml)",
+    color: "#0D9488",
+    panel: 1,
+    available: true,
+  },
+  {
+    key: "vaginoscope",
+    title: "Vaginoscope",
+    subtitle: "Future Module — direct vaginal visualization",
+    color: "#BE185D",
+    panel: 2,
+    available: false,
+  },
 ];
+
+const PANEL_W = 110; // visible width of each panel inside the card
+const PANEL_H = 130;
+const IMG_W = PANEL_W * 3; // image rendered at 3x panel width, then offset to show one panel
 
 export default function EvalType() {
   const { theme } = useTheme();
@@ -39,33 +67,51 @@ export default function EvalType() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.bg }} edges={["bottom"]}>
-      <ScreenHeader title="Choose Evaluation Method" subtitle="Select your diagnostic technique" />
+      <ScreenHeader title="Choose Evaluation Method" subtitle="Tap a method to begin" />
       <ScrollView contentContainerStyle={styles.scroll}>
-        <Image source={{ uri: REF_IMG }} style={styles.banner} resizeMode="cover" />
+        {METHODS.map((m) => (
+          <Pressable
+            key={m.key}
+            testID={`method-${m.key}`}
+            onPress={() => pick(m)}
+            disabled={!m.available}
+            style={({ pressed }) => [
+              styles.card,
+              {
+                backgroundColor: theme.card,
+                borderColor: m.available ? m.color : theme.border,
+                opacity: !m.available ? 0.6 : pressed ? 0.85 : 1,
+              },
+            ]}
+          >
+            <View style={[styles.imageFrame, { backgroundColor: "#fff" }]}>
+              <Image
+                source={{ uri: REF_IMG }}
+                style={{ width: IMG_W, height: PANEL_H, marginLeft: -m.panel * PANEL_W }}
+                resizeMode="cover"
+              />
+            </View>
 
-        <View style={{ gap: 14 }}>
-          {METHODS.map((m) => (
-            <Pressable
-              key={m.key}
-              testID={`method-${m.key}`}
-              onPress={() => pick(m)}
-              disabled={!m.available}
-              style={({ pressed }) => [
-                styles.card,
-                { backgroundColor: theme.card, borderColor: m.available ? m.color : theme.border, opacity: !m.available ? 0.6 : pressed ? 0.85 : 1 },
-              ]}
-            >
-              <View style={[styles.iconWrap, { backgroundColor: m.color }]}>
-                <Ionicons name={m.icon} size={28} color="#fff" />
+            <View style={styles.textBlock}>
+              <View style={[styles.colorBar, { backgroundColor: m.color }]} />
+              <Text style={[styles.title, { color: theme.text }]} numberOfLines={2}>{m.title}</Text>
+              <Text style={[styles.subtitle, { color: theme.textMuted }]} numberOfLines={2}>{m.subtitle}</Text>
+              <View style={styles.actionRow}>
+                {m.available ? (
+                  <View style={[styles.actionPill, { backgroundColor: m.color }]}>
+                    <Text style={styles.actionText}>Start</Text>
+                    <Ionicons name="arrow-forward" size={14} color="#fff" />
+                  </View>
+                ) : (
+                  <View style={[styles.actionPill, { backgroundColor: theme.border }]}>
+                    <Ionicons name="lock-closed" size={12} color={theme.textMuted} />
+                    <Text style={[styles.actionText, { color: theme.textMuted }]}>Coming Soon</Text>
+                  </View>
+                )}
               </View>
-              <View style={{ flex: 1 }}>
-                <Text style={[styles.title, { color: theme.text }]}>{m.title}</Text>
-                <Text style={[styles.sub, { color: theme.textMuted }]}>{m.subtitle}</Text>
-              </View>
-              <Ionicons name={m.available ? "chevron-forward" : "lock-closed"} size={20} color={theme.textMuted} />
-            </Pressable>
-          ))}
-        </View>
+            </View>
+          </Pressable>
+        ))}
 
         <Text style={[styles.note, { color: theme.textMuted }]}>
           You can combine Cytology + Progesterone results in a single evaluation for the most accurate breeding window.
@@ -76,11 +122,29 @@ export default function EvalType() {
 }
 
 const styles = StyleSheet.create({
-  scroll: { padding: 16, gap: 16, paddingBottom: 32 },
-  banner: { width: "100%", height: 140, borderRadius: 16 },
-  card: { flexDirection: "row", alignItems: "center", gap: 14, padding: 18, borderRadius: 18, borderWidth: 2 },
-  iconWrap: { width: 56, height: 56, borderRadius: 14, alignItems: "center", justifyContent: "center" },
-  title: { fontSize: 15, fontWeight: "800", letterSpacing: -0.2 },
-  sub: { fontSize: 12, marginTop: 3 },
+  scroll: { padding: 16, gap: 14, paddingBottom: 32 },
+  card: {
+    flexDirection: "row",
+    gap: 14,
+    padding: 12,
+    borderRadius: 20,
+    borderWidth: 2,
+    alignItems: "center",
+  },
+  imageFrame: {
+    width: PANEL_W,
+    height: PANEL_H,
+    borderRadius: 14,
+    overflow: "hidden",
+    alignItems: "flex-start",
+    justifyContent: "flex-start",
+  },
+  textBlock: { flex: 1, gap: 4 },
+  colorBar: { width: 36, height: 4, borderRadius: 2, marginBottom: 4 },
+  title: { fontSize: 16, fontWeight: "800", letterSpacing: -0.2 },
+  subtitle: { fontSize: 12, lineHeight: 17 },
+  actionRow: { flexDirection: "row", marginTop: 8 },
+  actionPill: { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 12, paddingVertical: 7, borderRadius: 999 },
+  actionText: { color: "#fff", fontSize: 12, fontWeight: "800", letterSpacing: 0.3 },
   note: { fontSize: 12, textAlign: "center", marginTop: 8, lineHeight: 18, paddingHorizontal: 8 },
 });

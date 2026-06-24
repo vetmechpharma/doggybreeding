@@ -1,0 +1,30 @@
+{
+  "summary": "Iteration 3 frontend tests: all 7 changed flows + backend sanity verified end-to-end on mobile viewport (390x844). Evaluation Type screen now renders EXACTLY 3 cards (Vaginal Exfoliative Cytology, Progesterone Analysis, Vaginoscope) — no banner image, no duplicate text-only cards. Each card shows panel image + colour bar + title + subtitle + Start pill; Vaginoscope shows Coming Soon lock and is disabled (tap stays on /evaluation/type). Cytology card routes to /evaluation/cytology?dog_id=...&proestrus_date=... and Progesterone card routes to /evaluation/progesterone?dog_id=... correctly. Cytology Calculator: 5 cell rows (PC/IC/SIC/SC/CC) each render as a single horizontal row with coloured tag (with info icon) + cell name + thin progress bar + numeric input + % suffix. Tapping the PC tag opens info modal with image+bullets; modal closes both via X icon and 'Got it' button. SC=80 + PC=20 → donut shows 100/100, Calculate Result becomes enabled, submitting routes to /evaluation/result?eval_id=<uuid> and the result page displays Stage=Estrus 92%. Backend regression sanity: POST /api/calc/cytology with {pc:20,ic:0,sic:0,sc:80,cc:0} returned stage='Estrus', confidence=92, CI=80, breeding_status='Optimal — Breed now' — matches expectation. Non-blocking console warnings still present (carry-over from iter 2): react-native-web 'transform-origin' DOM property warning and 'props.pointerEvents is deprecated' from Modal/animation.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [],
+    "react_native_issues": [
+      {"component": "Modal animation (react-native-web)", "issue": "Console error 'Invalid DOM property transform-origin. Did you mean transformOrigin?' still emitted by Modal animationType='fade'/'slide' on web (carry-over from iter 2). Reference: /app/frontend/app/evaluation/cytology.tsx Modal, SelectField/DatePickerField Modals."},
+      {"component": "Pressable pointerEvents", "issue": "Console warning 'props.pointerEvents is deprecated. Use style.pointerEvents' from react-native-web during Modal interactions (carry-over from iter 2)."}
+    ]
+  },
+  "test_report_links": ["inline Playwright script — no test file created (single-shot run)"],
+  "action_items": [
+    "(Low priority, carry-over) Resolve react-native-web Modal 'transform-origin' DOM warning and 'props.pointerEvents' deprecation. Likely needs react-native-web version bump or replacing animationType with custom Animated.View wrapper."
+  ],
+  "critical_code_review_comments": [
+    "type.tsx: panel-clipping approach (image rendered 3× width with marginLeft offset inside fixed-size overflow:hidden frame) is clean and avoids loading 3 separate assets. The disabled Vaginoscope correctly short-circuits in pick() before router.push.",
+    "cytology.tsx: single-line row layout uses flex children (cellTag width≈64, middle flex:1, inputWrap minWidth 88) and works without wrapping at 390px viewport. testIDs cytology-{key}-info, cytology-{key}-input, cytology-info-close, cytology-info-got-it, cytology-calculate-button all present and addressable.",
+    "submit() blocks on !user || !params.dog_id silently — if either is missing the button no-ops with no toast. Consider showing a toast when the press is rejected so the user understands why nothing happened.",
+    "Cytology images for SIC/SC/CC reuse the same pexels URL (8533045 / 13949979) — not strictly buggy but the educational modal would benefit from cell-specific imagery; flag for product team."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "100% (1/1 calc/cytology sanity)", "frontend": "100% (14/14 sub-checks across Eval Type + Cytology + Result routing)"},
+  "seed_data_creation": "Created one test user via Continue-without-Google, submitted register form (Tamil Nadu), and one cytology evaluation (PC=20, SC=80 → Estrus, eval_id=096bfb3e-...).",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Iteration 3 fixes all verified. Key testIDs: method-cytology, method-progesterone, method-vaginoscope (disabled). Cytology row testIDs unchanged from iter 2: cytology-{pc|ic|sic|sc|cc}-{info|input}, cytology-info-close, cytology-info-got-it, cytology-calculate-button. Direct deep-link /evaluation/type?dog_id=<id>&proestrus_date= works without going through New Evaluation flow — useful for shortcut testing.",
+  "rca_of_issue": "n/a — no bugs found in tested flows."
+}

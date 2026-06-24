@@ -159,25 +159,26 @@ export default function CytologyCalc() {
             </Text>
           </View>
 
-          {/* Inputs — bigger, tap header to see info */}
-          <View style={{ gap: 12 }}>
+          {/* Inputs — single-line per cell */}
+          <View style={{ gap: 10 }}>
             {CELLS.map((c) => (
-              <View key={c.key} style={[styles.inputCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
-                <View style={styles.inputHeader}>
-                  <Pressable
-                    testID={`cytology-${c.key}-info`}
-                    onPress={() => setInfo(c)}
-                    style={({ pressed }) => [styles.cellTag, { backgroundColor: CELL_COLORS[c.key], opacity: pressed ? 0.85 : 1 }]}
-                  >
-                    <Text style={styles.cellTagText}>{c.label}</Text>
-                    <Ionicons name="information-circle" size={16} color="rgba(255,255,255,0.95)" />
-                  </Pressable>
-                  <View style={{ flex: 1, marginLeft: 12 }}>
-                    <Text style={[styles.cellFull, { color: theme.text }]}>{c.full}</Text>
-                    <Text style={[styles.cellHint, { color: theme.textMuted }]}>{c.hint}</Text>
+              <View key={c.key} style={[styles.inputRow, { backgroundColor: theme.card, borderColor: theme.border }]}>
+                <Pressable
+                  testID={`cytology-${c.key}-info`}
+                  onPress={() => setInfo(c)}
+                  style={({ pressed }) => [styles.cellTag, { backgroundColor: CELL_COLORS[c.key], opacity: pressed ? 0.85 : 1 }]}
+                  hitSlop={4}
+                >
+                  <Text style={styles.cellTagText}>{c.label}</Text>
+                  <Ionicons name="information-circle" size={14} color="rgba(255,255,255,0.95)" />
+                </Pressable>
+                <View style={styles.middle}>
+                  <Text style={[styles.cellFull, { color: theme.text }]} numberOfLines={1}>{c.full}</Text>
+                  <View style={[styles.bar, { backgroundColor: theme.inputBg }]}>
+                    <View style={[styles.barFill, { width: `${Math.min(100, nums[c.key])}%`, backgroundColor: CELL_COLORS[c.key] }]} />
                   </View>
                 </View>
-                <View style={styles.inputBlock}>
+                <View style={[styles.inputWrap, { backgroundColor: theme.inputBg, borderColor: theme.border }]}>
                   <TextInput
                     testID={`cytology-${c.key}-input`}
                     value={vals[c.key]}
@@ -185,12 +186,9 @@ export default function CytologyCalc() {
                     placeholder="0"
                     placeholderTextColor={theme.textMuted}
                     keyboardType="decimal-pad"
-                    style={[styles.bigInput, { backgroundColor: theme.inputBg, borderColor: theme.border, color: theme.text }]}
+                    style={[styles.bigInput, { color: theme.text }]}
                   />
                   <Text style={[styles.unit, { color: theme.textMuted }]}>%</Text>
-                </View>
-                <View style={[styles.bar, { backgroundColor: theme.inputBg }]}>
-                  <View style={[styles.barFill, { width: `${Math.min(100, nums[c.key])}%`, backgroundColor: CELL_COLORS[c.key] }]} />
                 </View>
               </View>
             ))}
@@ -257,17 +255,16 @@ const styles = StyleSheet.create({
   progressFill: { height: 8, borderRadius: 8 },
   remaining: { fontSize: 12, fontWeight: "700", marginTop: 10 },
 
-  inputCard: { padding: 14, borderRadius: 16, borderWidth: 1, gap: 10 },
-  inputHeader: { flexDirection: "row", alignItems: "center" },
-  cellTag: { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, minWidth: 64, justifyContent: "center" },
-  cellTagText: { color: "#fff", fontWeight: "800", fontSize: 14 },
-  cellFull: { fontSize: 14, fontWeight: "800" },
-  cellHint: { fontSize: 12, marginTop: 2 },
-  inputBlock: { flexDirection: "row", alignItems: "center", gap: 10 },
-  bigInput: { flex: 1, borderWidth: 1, borderRadius: 14, paddingHorizontal: 16, paddingVertical: 16, fontSize: 24, fontWeight: "800", textAlign: "center", letterSpacing: -0.5 },
-  unit: { fontSize: 18, fontWeight: "800" },
+  inputRow: { flexDirection: "row", alignItems: "center", gap: 10, padding: 10, borderRadius: 14, borderWidth: 1 },
+  cellTag: { flexDirection: "row", alignItems: "center", gap: 3, paddingHorizontal: 8, paddingVertical: 10, borderRadius: 10, minWidth: 64, justifyContent: "center" },
+  cellTagText: { color: "#fff", fontWeight: "800", fontSize: 13, letterSpacing: 0.3 },
+  middle: { flex: 1, gap: 6 },
+  cellFull: { fontSize: 13, fontWeight: "700" },
   bar: { height: 4, borderRadius: 4, overflow: "hidden" },
   barFill: { height: 4, borderRadius: 4 },
+  inputWrap: { flexDirection: "row", alignItems: "center", borderWidth: 1, borderRadius: 12, paddingHorizontal: 8, paddingVertical: 6, minWidth: 88 },
+  bigInput: { width: 56, fontSize: 22, fontWeight: "800", textAlign: "center", padding: 0, letterSpacing: -0.5 },
+  unit: { fontSize: 14, fontWeight: "800", marginLeft: 2 },
 
   btn: { flexDirection: "row", gap: 8, alignItems: "center", justifyContent: "center", paddingVertical: 16, borderRadius: 14, marginTop: 10 },
   btnText: { color: "#fff", fontWeight: "800", fontSize: 16 },
