@@ -1,0 +1,122 @@
+{
+  "theme_archetype": "Clinical Trust with Vibrant Accents (Archetype 1 + High Contrast 4)",
+  "design_philosophy": "A professional veterinary app that balances medical authority (clear data, structured grids) with approachable warmth (vibrant brand colors, pet-centric). Designed for mobile (Expo React Native) with large touch targets and high-contrast data visualization.",
+  "colors": {
+    "brand": {
+      "primary": "#0F172A",
+      "primary_light": "#1E3A8A",
+      "accent_coral": "#FF6B6B",
+      "accent_pink": "#FB7185"
+    },
+    "splash_gradient": {
+      "start": "#3B82F6",
+      "middle": "#8B5CF6",
+      "end": "#EC4899"
+    },
+    "heat_cycle_stages": {
+      "anestrus": "#3B82F6",
+      "early_proestrus": "#A855F7",
+      "mid_proestrus": "#F97316",
+      "late_proestrus": "#EAB308",
+      "estrus": "#22C55E",
+      "diestrus": "#EF4444"
+    },
+    "surface": {
+      "light": {
+        "background": "#F8FAFC",
+        "card": "#FFFFFF",
+        "text_primary": "#0F172A",
+        "text_secondary": "#64748B",
+        "border": "#E2E8F0"
+      },
+      "dark": {
+        "background": "#020617",
+        "card": "#0F172A",
+        "text_primary": "#F8FAFC",
+        "text_secondary": "#94A3B8",
+        "border": "#1E293B"
+      }
+    }
+  },
+  "typography": {
+    "font_family": {
+      "heading": "Plus Jakarta Sans, Outfit, System",
+      "body": "Manrope, System"
+    },
+    "scale": {
+      "h1": "32px, bold, tight-tracking",
+      "h2": "24px, bold",
+      "h3": "20px, semi-bold",
+      "body_lg": "16px, medium",
+      "body": "14px, regular",
+      "caption": "12px, medium, uppercase-tracking"
+    }
+  },
+  "spacing_and_layout": {
+    "container_padding": "16px to 24px (mobile-first)",
+    "card_radius": "16px (softly rounded for approachability)",
+    "button_radius": "12px",
+    "touch_target_min": "48px height minimum for clinical usability (gloves/rush)",
+    "grid_gap": "16px between cards"
+  },
+  "component_guidelines": {
+    "buttons": {
+      "primary": "Navy background, white text, bold. Coral background for key conversion actions.",
+      "secondary": "Outline or subtle tint (e.g., bg-slate-100 dark:bg-slate-800)."
+    },
+    "inputs": {
+      "style": "Filled or Outlined with 1px border. Must have high-contrast focus state.",
+      "calculator_fields": "Large, numeric keypads. Progress bar updates dynamically as inputs reach 100%."
+    },
+    "cards": {
+      "dashboard_stats": "Bento-grid style. Minimal shadow (light mode) or subtle 1px border (dark mode).",
+      "evaluation_type": "Vertical illustrated cards. Dark navy background with coral/pink accent lines.",
+      "result_screen": "Massive full-width color-coded card matching the strict Heat Cycle Stage color. White or high-contrast dark text inside."
+    },
+    "glassmorphism": {
+      "usage": "Splash screen overlay, modal backdrops, floating action buttons.",
+      "style": "Blur 10-20px, background white/20 or black/20 with 1px translucent border."
+    }
+  },
+  "media_urls": {
+    "learning_module": [
+      {
+        "url": "https://images.pexels.com/photos/8533045/pexels-photo-8533045.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+        "category": "Microscope/Cytology",
+        "description": "Scientist in lab using microscope, for cytology learning screens."
+      },
+      {
+        "url": "https://images.pexels.com/photos/13949979/pexels-photo-13949979.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+        "category": "Microscope/Cytology",
+        "description": "Close-up of laboratory microscope."
+      }
+    ],
+    "dashboard_placeholders": [
+      {
+        "url": "https://images.pexels.com/photos/6235119/pexels-photo-6235119.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+        "category": "Veterinary Clinic",
+        "description": "Veterinarian caring for a dog."
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1591160690555-5debfba289f0?crop=entropy&cs=srgb&fm=jpg",
+        "category": "Dog Profiles",
+        "description": "Golden retriever puppy for placeholder dog avatars."
+      }
+    ],
+    "local_assets": {
+      "instruction": "Use the user-provided assets (evaluation type cards image, app logo image) located in the project's local assets folder. The logo should feature dual dog silhouettes (navy + coral) and paw heart. Ensure the 3 Evaluation cards use the provided reference images."
+    }
+  },
+  "testing": {
+    "instruction": "All interactive and key informational elements MUST include a `testID` attribute in React Native (maps to data-testid). Use kebab-case, role-based naming (e.g., `login-form-submit-button`, `cytology-calc-pc-input`)."
+  },
+  "instructions_to_main_agent": [
+    "This is an Expo React Native mobile app. Use native View/Text components and StyleSheet/NativeWind.",
+    "Implement the splash screen with a linear gradient using the exact colors: #3B82F6, #8B5CF6, #EC4899 and an animated loading bar.",
+    "Ensure Result Screen completely transforms its visual weight to match the diagnosed heat cycle stage color.",
+    "The Heat Cycle Visual Timeline should be a horizontal scrollable timeline or a progressive flow highlighting the current stage in its designated color.",
+    "For the 3 Evaluation Type cards, enforce vertical aspect ratios with dark navy backgrounds and coral accents, leaving space for the user's local reference images.",
+    "Ensure the application strictly follows light/dark mode paradigms, avoiding pure white/black, instead using the specified surface Slate/Navy tones.",
+    "All forms (Registration, New Evaluation) must use appropriate React Native keyboard types (e.g., numeric for weight/age)."
+  ]
+}
