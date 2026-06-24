@@ -1,0 +1,24 @@
+{
+  "summary": "Iteration 4 verification of single-line package.json preinstall fix. (1) package.json sanity: line 6 reads EXACTLY 'preinstall: node ./scripts/cmd-guard.js --preinstall' — the 'node ' prefix is present, which is the root-cause fix for the Windows cscript/JScript 800A03F6 'Invalid character' error reported by user. (2) Backend regressions all green via pytest (5/5 passed in 0.50s): GET /api/ returns version 1.0.0 with message 'Doggy Breeding App API'; POST /api/calc/cytology {pc:20,ic:0,sic:0,sc:80,cc:0} → stage='Estrus', stage_key='ESTRUS', confidence=92, cornification_index=80.0, breeding_status='Optimal — Breed now'; POST /api/auth/google upserts and returns user with google_id+name (creates new, idempotent on repeat, 400 when google_id missing). (3) Frontend smoke at https://canine-cycle.preview.emergentagent.com (390x844 viewport): splash renders title 'Doggy Breeding App', tagline 'BREED • TRACK • CARE', hint 'Tap anywhere to continue', and credits. Tapping splash navigates to /login showing 'Sign in with Google', 'OR', and the 'Continue without Google' button. No console errors, no red screen. The original Windows-only 800A03F6 cscript error cannot be reproduced on the Linux test environment, but the root cause (missing 'node ' prefix causing Windows to hand the .js file to cscript) is verifiably fixed. No new functionality added — package.json only — and nothing else broke.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [],
+    "react_native_issues": []
+  },
+  "test_report_links": ["/app/backend/tests/test_doggy_breeding_api.py", "/app/test_reports/pytest/pytest_results.xml"],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "package.json preinstall fix is minimal and correct: prefixing with 'node ' forces npm/yarn (and Windows shell) to invoke node explicitly instead of relying on shebang + file-association — which on Windows Script Host routes .js to cscript.exe and fails on ES6/CommonJS syntax with 800A03F6.",
+    "cmd-guard.js retains its '#!/usr/bin/env node' shebang which still works for direct shim invocation on Unix; the package.json change is the only fix needed for Windows.",
+    "No other scripts in package.json invoke .js files without 'node ' prefix — reset-project.js is already correctly prefixed (line 8). Good consistency."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "100% (5/5 targeted regression tests)", "frontend": "100% (splash + login smoke)"},
+  "seed_data_creation": "Two transient TEST_GoogleUser records created via /api/auth/google for idempotency test (timestamped google_id, low impact).",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Iteration 4 verifies a pure package.json change (preinstall script gains 'node ' prefix). No code paths changed. Existing comprehensive backend test suite at /app/backend/tests/test_doggy_breeding_api.py remains the regression source of truth. To re-run quickly: pytest /app/backend/tests/test_doggy_breeding_api.py -v. The Windows-only cscript error cannot be reproduced on Linux CI but the fix is correct per Windows Script Host's known behavior of routing .js to JScript engine.",
+  "rca_of_issue": "Root cause: package.json had 'preinstall: ./scripts/cmd-guard.js --preinstall'. On Linux/macOS the shebang #!/usr/bin/env node executes the file as a Node script. On Windows, no shebang support — Windows Script Host (cscript.exe) is the default handler for .js files and tries to parse it as JScript, which fails on modern CommonJS/ES2015 syntax (const, require, arrow funcs) with 800A03F6 'Invalid character'. Mitigation applied: prefix the script with 'node ' so npm/yarn always invoke the Node runtime explicitly regardless of OS. Verified by inspecting line 6 of /app/frontend/package.json."
+}
