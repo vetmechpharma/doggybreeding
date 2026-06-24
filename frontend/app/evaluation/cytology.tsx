@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Image, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -11,12 +11,81 @@ import { DonutChart } from "@/src/components/DonutChart";
 import { api } from "@/src/api/client";
 
 const CELL_COLORS = { pc: "#3B82F6", ic: "#A855F7", sic: "#F97316", sc: "#22C55E", cc: "#EF4444" };
-const CELLS: Array<{ key: keyof typeof CELL_COLORS; label: string; hint: string }> = [
-  { key: "pc", label: "PC", hint: "Parabasal" },
-  { key: "ic", label: "IC", hint: "Intermediate" },
-  { key: "sic", label: "SIC", hint: "Small Interm." },
-  { key: "sc", label: "SC", hint: "Superficial" },
-  { key: "cc", label: "CC", hint: "Cornified" },
+
+interface CellInfo {
+  key: keyof typeof CELL_COLORS;
+  label: string;
+  full: string;
+  hint: string;
+  image: string;
+  details: string[];
+}
+
+const CELLS: CellInfo[] = [
+  {
+    key: "pc",
+    label: "PC",
+    full: "Parabasal Cells",
+    hint: "Round to oval, large nucleus",
+    image: "https://images.pexels.com/photos/8533045/pexels-photo-8533045.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    details: [
+      "Smallest of the vaginal epithelial cells.",
+      "Round to oval, large central nucleus.",
+      "Predominant during anestrus and diestrus.",
+      "High proportion → not in heat.",
+    ],
+  },
+  {
+    key: "ic",
+    label: "IC",
+    full: "Intermediate Cells",
+    hint: "Low nucleus-to-cytoplasm ratio",
+    image: "https://images.pexels.com/photos/13949979/pexels-photo-13949979.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    details: [
+      "Larger than parabasal cells.",
+      "Polygonal shape, more cytoplasm.",
+      "Smaller nucleus than PC.",
+      "Seen in stage transitions.",
+    ],
+  },
+  {
+    key: "sic",
+    label: "SIC",
+    full: "Small Intermediate Cells",
+    hint: "Polygonal, abundant cytoplasm",
+    image: "https://images.pexels.com/photos/8533045/pexels-photo-8533045.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    details: [
+      "Transitional cells between IC and SC.",
+      "Abundant cytoplasm with compact nucleus.",
+      "Indicates progressing estrogenic effect.",
+    ],
+  },
+  {
+    key: "sc",
+    label: "SC",
+    full: "Superficial Cells",
+    hint: "Flat, angular, small pyknotic nucleus",
+    image: "https://images.pexels.com/photos/8533045/pexels-photo-8533045.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    details: [
+      "Largest cell type — angular borders.",
+      "Small dark pyknotic nucleus.",
+      "High proportion → peak estrogen → estrus.",
+      "Optimal breeding when SC + CC ≥ 80%.",
+    ],
+  },
+  {
+    key: "cc",
+    label: "CC",
+    full: "Cornified Cells",
+    hint: "Fully keratinized, no visible nucleus",
+    image: "https://images.pexels.com/photos/13949979/pexels-photo-13949979.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    details: [
+      "Fully keratinized, anuclear cells.",
+      "Sharp edges, shrivelled appearance.",
+      "Hallmark of full cornification — peak estrus.",
+      "Critical marker for mating decision.",
+    ],
+  },
 ];
 
 export default function CytologyCalc() {
@@ -28,6 +97,7 @@ export default function CytologyCalc() {
 
   const [vals, setVals] = useState<Record<string, string>>({ pc: "", ic: "", sic: "", sc: "", cc: "" });
   const [busy, setBusy] = useState(false);
+  const [info, setInfo] = useState<CellInfo | null>(null);
 
   const nums = useMemo(() => ({
     pc: Number(vals.pc) || 0,
@@ -71,12 +141,12 @@ export default function CytologyCalc() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.bg }} edges={["bottom"]}>
-      <ScreenHeader title="Cytology Calculator" subtitle="Enter cell counts (total = 100)" />
+      <ScreenHeader title="Cytology Calculator" subtitle="Tap a cell label to learn more" />
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-          {/* Donut */}
+          {/* Donut summary */}
           <View style={[styles.donutCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
-            <DonutChart data={donutData} size={180} strokeWidth={20} centerLabel="Total" centerValue={`${total}/100`} theme={theme} />
+            <DonutChart data={donutData} size={170} strokeWidth={20} centerLabel="Total" centerValue={`${total}/100`} theme={theme} />
             <View style={{ marginTop: 12, alignItems: "center" }}>
               <Text style={[styles.ciLabel, { color: theme.textMuted }]}>Cornification Index</Text>
               <Text style={[styles.ciValue, { color: theme.text }]}>{ci.toFixed(0)}%</Text>
@@ -89,28 +159,39 @@ export default function CytologyCalc() {
             </Text>
           </View>
 
-          {/* Inputs */}
-          <View style={{ gap: 10 }}>
+          {/* Inputs — bigger, tap header to see info */}
+          <View style={{ gap: 12 }}>
             {CELLS.map((c) => (
-              <View key={c.key} style={[styles.inputRow, { backgroundColor: theme.card, borderColor: theme.border }]}>
-                <View style={[styles.cellChip, { backgroundColor: CELL_COLORS[c.key] }]}>
-                  <Text style={styles.cellChipText}>{c.label}</Text>
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={[styles.cellName, { color: theme.text }]}>{c.label} <Text style={{ color: theme.textMuted, fontWeight: "500" }}>— {c.hint}</Text></Text>
-                  <View style={[styles.bar, { backgroundColor: theme.inputBg }]}>
-                    <View style={[styles.barFill, { width: `${Math.min(100, nums[c.key])}%`, backgroundColor: CELL_COLORS[c.key] }]} />
+              <View key={c.key} style={[styles.inputCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
+                <View style={styles.inputHeader}>
+                  <Pressable
+                    testID={`cytology-${c.key}-info`}
+                    onPress={() => setInfo(c)}
+                    style={({ pressed }) => [styles.cellTag, { backgroundColor: CELL_COLORS[c.key], opacity: pressed ? 0.85 : 1 }]}
+                  >
+                    <Text style={styles.cellTagText}>{c.label}</Text>
+                    <Ionicons name="information-circle" size={16} color="rgba(255,255,255,0.95)" />
+                  </Pressable>
+                  <View style={{ flex: 1, marginLeft: 12 }}>
+                    <Text style={[styles.cellFull, { color: theme.text }]}>{c.full}</Text>
+                    <Text style={[styles.cellHint, { color: theme.textMuted }]}>{c.hint}</Text>
                   </View>
                 </View>
-                <TextInput
-                  testID={`cytology-${c.key}-input`}
-                  value={vals[c.key]}
-                  onChangeText={(t) => setVals((v) => ({ ...v, [c.key]: t.replace(/[^0-9.]/g, "") }))}
-                  placeholder="0"
-                  placeholderTextColor={theme.textMuted}
-                  keyboardType="decimal-pad"
-                  style={[styles.numInput, { backgroundColor: theme.inputBg, borderColor: theme.border, color: theme.text }]}
-                />
+                <View style={styles.inputBlock}>
+                  <TextInput
+                    testID={`cytology-${c.key}-input`}
+                    value={vals[c.key]}
+                    onChangeText={(t) => setVals((v) => ({ ...v, [c.key]: t.replace(/[^0-9.]/g, "") }))}
+                    placeholder="0"
+                    placeholderTextColor={theme.textMuted}
+                    keyboardType="decimal-pad"
+                    style={[styles.bigInput, { backgroundColor: theme.inputBg, borderColor: theme.border, color: theme.text }]}
+                  />
+                  <Text style={[styles.unit, { color: theme.textMuted }]}>%</Text>
+                </View>
+                <View style={[styles.bar, { backgroundColor: theme.inputBg }]}>
+                  <View style={[styles.barFill, { width: `${Math.min(100, nums[c.key])}%`, backgroundColor: CELL_COLORS[c.key] }]} />
+                </View>
               </View>
             ))}
           </View>
@@ -126,6 +207,43 @@ export default function CytologyCalc() {
           </Pressable>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {/* Info modal */}
+      <Modal testID="cytology-info-modal" visible={!!info} transparent animationType="fade" onRequestClose={() => setInfo(null)}>
+        <Pressable style={modalStyles.backdrop} onPress={() => setInfo(null)} />
+        {info && (
+          <View style={[modalStyles.sheet, { backgroundColor: theme.card }]}>
+            <View style={modalStyles.headerRow}>
+              <View style={[modalStyles.tag, { backgroundColor: CELL_COLORS[info.key] }]}>
+                <Text style={modalStyles.tagText}>{info.label}</Text>
+              </View>
+              <View style={{ flex: 1, marginLeft: 12 }}>
+                <Text style={[modalStyles.title, { color: theme.text }]}>{info.full}</Text>
+                <Text style={[modalStyles.subtitle, { color: theme.textMuted }]}>{info.hint}</Text>
+              </View>
+              <Pressable testID="cytology-info-close" onPress={() => setInfo(null)} hitSlop={12}>
+                <Ionicons name="close" size={24} color={theme.text} />
+              </Pressable>
+            </View>
+            <Image source={{ uri: info.image }} style={modalStyles.image} />
+            <View style={{ marginTop: 12 }}>
+              {info.details.map((d, i) => (
+                <View key={i} style={modalStyles.bulletRow}>
+                  <View style={[modalStyles.bulletDot, { backgroundColor: CELL_COLORS[info.key] }]} />
+                  <Text style={[modalStyles.bullet, { color: theme.textMuted }]}>{d}</Text>
+                </View>
+              ))}
+            </View>
+            <Pressable
+              testID="cytology-info-got-it"
+              onPress={() => setInfo(null)}
+              style={({ pressed }) => [modalStyles.gotIt, { backgroundColor: theme.navy, opacity: pressed ? 0.85 : 1 }]}
+            >
+              <Text style={{ color: "#fff", fontWeight: "800", fontSize: 14 }}>Got it</Text>
+            </Pressable>
+          </View>
+        )}
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -138,13 +256,34 @@ const styles = StyleSheet.create({
   progressTrack: { width: "100%", height: 8, borderRadius: 8, marginTop: 10, overflow: "hidden" },
   progressFill: { height: 8, borderRadius: 8 },
   remaining: { fontSize: 12, fontWeight: "700", marginTop: 10 },
-  inputRow: { flexDirection: "row", alignItems: "center", gap: 12, padding: 12, borderRadius: 14, borderWidth: 1 },
-  cellChip: { width: 44, height: 44, borderRadius: 12, alignItems: "center", justifyContent: "center" },
-  cellChipText: { color: "#fff", fontWeight: "800", fontSize: 13 },
-  cellName: { fontSize: 13, fontWeight: "800" },
-  bar: { height: 4, borderRadius: 4, marginTop: 6, overflow: "hidden" },
+
+  inputCard: { padding: 14, borderRadius: 16, borderWidth: 1, gap: 10 },
+  inputHeader: { flexDirection: "row", alignItems: "center" },
+  cellTag: { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, minWidth: 64, justifyContent: "center" },
+  cellTagText: { color: "#fff", fontWeight: "800", fontSize: 14 },
+  cellFull: { fontSize: 14, fontWeight: "800" },
+  cellHint: { fontSize: 12, marginTop: 2 },
+  inputBlock: { flexDirection: "row", alignItems: "center", gap: 10 },
+  bigInput: { flex: 1, borderWidth: 1, borderRadius: 14, paddingHorizontal: 16, paddingVertical: 16, fontSize: 24, fontWeight: "800", textAlign: "center", letterSpacing: -0.5 },
+  unit: { fontSize: 18, fontWeight: "800" },
+  bar: { height: 4, borderRadius: 4, overflow: "hidden" },
   barFill: { height: 4, borderRadius: 4 },
-  numInput: { width: 60, borderWidth: 1, borderRadius: 10, paddingHorizontal: 8, paddingVertical: 10, textAlign: "center", fontWeight: "800", fontSize: 16 },
+
   btn: { flexDirection: "row", gap: 8, alignItems: "center", justifyContent: "center", paddingVertical: 16, borderRadius: 14, marginTop: 10 },
   btnText: { color: "#fff", fontWeight: "800", fontSize: 16 },
+});
+
+const modalStyles = StyleSheet.create({
+  backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(0,0,0,0.55)" },
+  sheet: { position: "absolute", left: 16, right: 16, top: "8%", bottom: "8%", borderRadius: 22, padding: 18 },
+  headerRow: { flexDirection: "row", alignItems: "center" },
+  tag: { width: 56, height: 56, borderRadius: 14, alignItems: "center", justifyContent: "center" },
+  tagText: { color: "#fff", fontWeight: "800", fontSize: 18 },
+  title: { fontSize: 17, fontWeight: "800", letterSpacing: -0.3 },
+  subtitle: { fontSize: 12, marginTop: 2 },
+  image: { width: "100%", height: 180, borderRadius: 14, marginTop: 14 },
+  bulletRow: { flexDirection: "row", gap: 10, alignItems: "flex-start", paddingVertical: 5 },
+  bulletDot: { width: 8, height: 8, borderRadius: 4, marginTop: 7 },
+  bullet: { flex: 1, fontSize: 13, lineHeight: 20 },
+  gotIt: { paddingVertical: 14, alignItems: "center", borderRadius: 12, marginTop: 14 },
 });

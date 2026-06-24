@@ -1,0 +1,31 @@
+{
+  "summary": "Iteration 2 frontend tests: all 6 changed flows verified end-to-end on mobile viewport (390x844). Splash tap-to-skip → /login works; Register validates required fields (Hospital optional), rejects invalid email 'abc', state dropdown with Tamil Nadu/Other + search filter works, successful submit routes to /dashboard. New Evaluation has NO photo/weight fields; date pickers open HTML <input type='date'> modal on web, dates persist; submit succeeds with empty optional dates. Cytology info modal opens on cell-tag tap (PC), both close (X) and 'Got it' buttons close it; values persist across modal open/close; SC=100 → Estrus (92% confidence). Backend calls all returned 200. Minor non-blocking React Native Web console warnings: pointerEvents deprecation and transform-origin DOM property warning from Modal animations.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [],
+    "react_native_issues": [
+      {"component": "Modal animation (react-native-web)", "issue": "Console error: 'Invalid DOM property transform-origin. Did you mean transformOrigin?' emitted by Modal animationType='fade'/'slide' on web. Non-blocking but noisy. Reference: SelectField.tsx Modal, DatePickerField.tsx Modal, cytology.tsx Modal."},
+      {"component": "Pressable pointerEvents", "issue": "Console warning: 'props.pointerEvents is deprecated. Use style.pointerEvents' triggered by react-native-web during Modal interactions."},
+      {"component": "Expo SDK package versions", "issue": "Expo doctor reports mismatched versions: expo@54.0.34 (expected ~54.0.35), expo-font@14.0.11 (expected ~14.0.12), expo-router@6.0.23 (expected ~6.0.24). Recommend `npx expo install --check`."}
+    ]
+  },
+  "test_report_links": ["/app/tests/playwright_iter2.py"],
+  "action_items": [
+    "(Low priority) Resolve react-native-web Modal 'transform-origin' DOM warning — likely a react-native-web version issue or use of unsupported animationType. Consider upgrading react-native-web or wrapping modal content differently.",
+    "(Low priority) Run `npx expo install --check` to align expo/expo-font/expo-router to SDK 54 expected versions."
+  ],
+  "critical_code_review_comments": [
+    "DatePickerField on web: while the date picker correctly renders an <input type='date'> inside a Modal, the inline clear (close-circle) icon uses Pressable with e.stopPropagation() but on react-native-web Pressable's onPress is wired to a click whose event won't reliably stop the parent Pressable from also triggering — minor UX risk that tapping the clear icon may also reopen the picker. Manual web check confirmed value clears with no apparent reopen, but worth confirming on iOS/Android.",
+    "register.tsx valid memo correctly enforces hospital as optional (only name/mobile/email/location/state checked). Email regex /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/ is correct for basic validation.",
+    "Splash uses setTimeout(go, 5000) and the same go() handler is called from Pressable onPress — tap-to-skip implementation is clean and idempotent via navigated state."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "n/a (frontend-only test)", "frontend": "100% (15/15 sub-checks)"},
+  "seed_data_creation": "Created one test user via Continue-without-Google, one dog (Bella, owner John, mobile 9876543210), and one cytology evaluation (SC=100 → Estrus). All persisted in backend.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "All 6 iteration-2 fixes verified working. testIDs to know: splash-screen, splash-skip-hint, continue-without-google-button, register-submit-button, reg-name/mobile/email/hospital/location-input, reg-state-select, reg-state-select-option-<state-slug>, dog-name-input, owner-name-input, owner-mobile-input, prev-whelping-date, proestrus-bleeding-date (open modal then fill input[type='date']), new-eval-continue-button, cytology-{pc|ic|sic|sc|cc}-info, cytology-{key}-input, cytology-info-close, cytology-info-got-it, cytology-calculate-button. Login note: 'Continue without Google' may return user with name='Veterinarian' and auto-route to /register?user_id=...&prefilled=1; register submit routes to /dashboard.",
+  "rca_of_issue": "n/a — no bugs found in tested flows."
+}

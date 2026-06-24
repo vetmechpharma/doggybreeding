@@ -6,6 +6,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/src/theme/ThemeContext";
 import { useAuth } from "@/src/auth/AuthContext";
 import { useToast } from "@/src/components/Toast";
+import { SelectField } from "@/src/components/SelectField";
+import { INDIAN_STATES } from "@/src/data/states";
 
 const CATEGORIES = ["Doctor", "Student", "Breeder", "Laboratory", "Clinic"] as const;
 
@@ -26,11 +28,20 @@ export default function Register() {
   const [state, setState] = useState(user?.state || "");
   const [busy, setBusy] = useState(false);
 
-  const valid = useMemo(() => name.trim().length > 1 && mobile.trim().length >= 7, [name, mobile]);
+  const isEmail = (s: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s.trim());
+  const valid = useMemo(() => {
+    return (
+      name.trim().length > 1 &&
+      mobile.trim().length >= 7 &&
+      isEmail(email) &&
+      location.trim().length > 0 &&
+      state.trim().length > 0
+    );
+  }, [name, mobile, email, location, state]);
 
   const submit = async () => {
     if (!valid) {
-      toast.show("Please provide Name and Mobile Number.", "error");
+      toast.show("Please fill all required (*) fields.", "error");
       return;
     }
     setBusy(true);
@@ -59,12 +70,12 @@ export default function Register() {
 
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-          <Text style={[styles.intro, { color: theme.textMuted }]}>Tell us about yourself so we can personalize your reports.</Text>
+          <Text style={[styles.intro, { color: theme.textMuted }]}>Tell us about yourself so we can personalize your reports. Fields marked * are required.</Text>
 
           <Field label="Name *" testID="reg-name-input" value={name} onChangeText={setName} placeholder="Full name" theme={theme} />
           <Field label="Mobile Number *" testID="reg-mobile-input" value={mobile} onChangeText={setMobile} placeholder="+91 9xxxxxxxxx" keyboardType="phone-pad" theme={theme} />
-          <Field label="Email" testID="reg-email-input" value={email} onChangeText={setEmail} placeholder="you@example.com" keyboardType="email-address" theme={theme} />
-          <Field label="Hospital / Clinic / Laboratory" testID="reg-hospital-input" value={hospital} onChangeText={setHospital} placeholder="Organization name" theme={theme} />
+          <Field label="Email *" testID="reg-email-input" value={email} onChangeText={setEmail} placeholder="you@example.com" keyboardType="email-address" theme={theme} />
+          <Field label="Hospital / Clinic / Laboratory" testID="reg-hospital-input" value={hospital} onChangeText={setHospital} placeholder="Organization name (optional)" theme={theme} />
 
           <Text style={[styles.label, { color: theme.text }]}>Category *</Text>
           <View style={styles.catRow}>
@@ -83,14 +94,16 @@ export default function Register() {
             })}
           </View>
 
-          <View style={{ flexDirection: "row", gap: 12 }}>
-            <View style={{ flex: 1 }}>
-              <Field label="Location" testID="reg-location-input" value={location} onChangeText={setLocation} placeholder="City / Town" theme={theme} />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Field label="State" testID="reg-state-input" value={state} onChangeText={setState} placeholder="State" theme={theme} />
-            </View>
-          </View>
+          <Field label="Location * (City / Town)" testID="reg-location-input" value={location} onChangeText={setLocation} placeholder="e.g. Namakkal" theme={theme} />
+          <SelectField
+            label="State *"
+            testID="reg-state-select"
+            value={state}
+            onChange={setState}
+            options={INDIAN_STATES}
+            placeholder="Select your state"
+            theme={theme}
+          />
 
           <Pressable
             testID="register-submit-button"
@@ -127,9 +140,9 @@ function Field({ label, value, onChangeText, placeholder, theme, testID, keyboar
 const styles = StyleSheet.create({
   header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, paddingVertical: 14, borderBottomWidth: 1 },
   headerTitle: { fontSize: 18, fontWeight: "800" },
-  scroll: { padding: 20, gap: 14, paddingBottom: 32 },
+  scroll: { padding: 20, gap: 14, paddingBottom: 40 },
   intro: { fontSize: 13, marginBottom: 6 },
-  label: { fontSize: 12, fontWeight: "700", letterSpacing: 0.5, textTransform: "uppercase" },
+  label: { fontSize: 11, fontWeight: "800", letterSpacing: 0.8, textTransform: "uppercase" },
   input: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15 },
   catRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   cat: { paddingHorizontal: 14, paddingVertical: 10, borderRadius: 999, borderWidth: 1 },
