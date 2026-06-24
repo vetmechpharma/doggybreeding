@@ -32,9 +32,8 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     <Ctx.Provider value={{ show }}>
       {children}
       <Animated.View
-        pointerEvents="none"
         testID="toast"
-        style={[styles.wrap, { opacity, top: insets.top + 16, backgroundColor: bg }]}
+        style={[styles.wrap, { opacity, top: insets.top + 16, backgroundColor: bg, pointerEvents: "none" }]}
       >
         <Text style={styles.text}>{msg}</Text>
       </Animated.View>

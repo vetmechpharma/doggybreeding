@@ -42,7 +42,7 @@ export const DonutChart: React.FC<{ data: Slice[]; size?: number; strokeWidth?: 
         </G>
       </Svg>
       {(centerValue || centerLabel) && (
-        <View style={styles.center} pointerEvents="none">
+        <View style={[styles.center, { pointerEvents: "none" }]}>
           {centerValue ? <Text style={[styles.value, { color: theme.text }]}>{centerValue}</Text> : null}
           {centerLabel ? <Text style={[styles.label, { color: theme.textMuted }]}>{centerLabel}</Text> : null}
         </View>
