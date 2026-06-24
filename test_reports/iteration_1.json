@@ -1,0 +1,59 @@
+{
+  "summary": "First-pass full E2E review. Backend: 26/26 tests passed (100%). All 12 backend endpoints work correctly including all 6 cytology stages, all 6 progesterone ranges, evaluations CRUD with full bundle, search, stats aggregation, feedback, and combined recommendation (higher-confidence wins). Frontend: All critical Expo flows working on mobile viewport (390x844) — splash auto-routes after 3s, login with disabled Google + 'Continue without Google', registration with required-field validation and category chips, dashboard with stats/donut/quick-access/CTA, full New Evaluation flow → Dog Info → Type → Cytology (PC=0/IC=0/SIC=10/SC=50/CC=40 → Estrus 92%) and Progesterone (10 ng/ml → Estrus/Ovulation 95%) with full result screen (stage banner, recommendation, heat-cycle timeline, breeding schedule, cell counts), History tab + search input, Learning tab + Parabasal detail page, Settings with dark-mode toggle and Logout returning to login. Two minor console issues observed: harmless React Native Web warnings (props.pointerEvents deprecated, useNativeDriver fallback), and one real console error 'Invalid DOM property transform-origin (did you mean transformOrigin?)'. No deprecated Expo packages, no SafeAreaView-from-react-native usage detected. No red screens. No 5xx from backend.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "result.tsx (or shared style)",
+        "issue": "Console error: 'Invalid DOM property `transform-origin`. Did you mean `transformOrigin`?' fires on result/dashboard screens. Some style/animation uses kebab-case CSS property instead of RN camelCase. Doesn't break UI but pollutes console. Investigate transform/scale animations.",
+        "testID": "n/a",
+        "priority": "LOW"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "dashboard.tsx (post-registration)",
+        "issues": [
+          "Toast 'Profile saved' from /register overlaps the dashboard greeting ('Good morning, Dr. TEST Vet UI') at the top, partially obscuring user name in the first ~1-2 seconds. Consider dismissing toast on navigation or routing the toast to a non-overlapping zone."
+        ]
+      }
+    ],
+    "react_native_issues": [
+      {
+        "component": "Various (likely AnimatedScrollView/Pressable)",
+        "issue": "Console warning: 'props.pointerEvents is deprecated. Use style.pointerEvents'. React Native Web deprecation — one of the components passes pointerEvents as a prop instead of inside style. Locate via component devtools."
+      }
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_doggy_breeding_api.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "Investigate and fix 'Invalid DOM property transform-origin' console error — search for any style using `transform-origin` (kebab-case) and convert to `transformOrigin` (camelCase). Likely in splash/result animations or shared theme.",
+    "Locate and fix React Native Web warning 'props.pointerEvents is deprecated' — move pointerEvents from props to style on the offending View/Pressable.",
+    "Optional UX: Dismiss the green 'Profile saved' toast on navigation so it doesn't overlap the dashboard greeting bar."
+  ],
+  "critical_code_review_comments": [
+    "server.py (582 lines) is approaching the 700-line threshold; consider splitting into modules (models.py, calc.py, routers/*.py) when the next feature lands.",
+    "GET /api/evaluations performs a Mongo fetch and then filters in Python for search — fine at current scale; switch to a Mongo $text or aggregation join when the collection grows.",
+    "auth/google endpoint accepts arbitrary google_id without verification (documented as intentional placeholder until EXPO_PUBLIC_GOOGLE_*_CLIENT_ID is provided). When real Google client IDs are added, server must call google.oauth2.id_token.verify_oauth2_token on id_token rather than trusting body fields."
+  ],
+  "updated_files": [
+    "/app/backend/tests/__init__.py (new, empty)",
+    "/app/backend/tests/test_doggy_breeding_api.py (new — 26 pytest cases)"
+  ],
+  "success_rate": {
+    "backend": "100% (26/26)",
+    "frontend": "100% of critical flows (splash, login, register, dashboard, new evaluation, cytology, progesterone, result, history, learning, settings/dark-mode, logout) — 2 minor console warnings only"
+  },
+  "seed_data_creation": "Tests create TEST_-prefixed users, dogs, and evaluations in the configured Mongo DB (test_database). No teardown — main agent may wish to add cleanup if running repeatedly.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Backend base URL: https://canine-cycle.preview.emergentagent.com. To bootstrap a session in the UI use 'Continue without Google' which posts {google_id: 'quick-<ts>'} to /api/auth/google. All form fields use testID; key flow IDs: continue-without-google-button, reg-name-input, reg-mobile-input, reg-category-<lowercase>, register-submit-button, dashboard-new-evaluation, dog-name-input, owner-name-input, owner-mobile-input, proestrus-bleeding-input, new-eval-continue-button, method-cytology|progesterone|combined, cytology-{pc,ic,sic,sc,cc}-input, cytology-calculate-button, progesterone-value-input, progesterone-calculate-button, history-search-input, history-row-<id>, learning-cell-<key>, dark-mode-switch, logout-button. Avoid page.go_back() multiple times — Expo Router on web can land on about:blank if you exceed the in-app stack; instead click bottom tab labels (Home/History/Learn/Settings) or navigate by URL like /(tabs)/settings.",
+  "rca_of_issue": "No blocking issues. The only real console error ('Invalid DOM property transform-origin') is a React Native Web style normalization issue: somewhere in the codebase a style property is written as `transform-origin` (CSS kebab-case) instead of the React Native `transformOrigin` (camelCase). RN Web logs this once per render and ignores the property. Search frontend/src and frontend/app for the literal string 'transform-origin' to locate."
+}
