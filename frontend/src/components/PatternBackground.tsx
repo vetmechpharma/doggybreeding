@@ -12,7 +12,7 @@ interface Props {
 // prints and DNA-helix-ish curves. Renders behind the splash content.
 export const PatternBackground: React.FC<Props> = ({ color = "#ffffff", opacity = 0.06, paws = true }) => {
   return (
-    <View pointerEvents="none" style={StyleSheet.absoluteFill}>
+    <View style={[StyleSheet.absoluteFill, { pointerEvents: "none" }]}>
       <Svg width="100%" height="100%" viewBox="0 0 400 800" preserveAspectRatio="xMidYMid slice">
         {/* large soft blobs */}
         <Circle cx="-40" cy="80" r="160" fill={color} opacity={opacity * 1.4} />
