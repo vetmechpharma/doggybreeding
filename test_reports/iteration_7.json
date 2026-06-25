@@ -1,0 +1,51 @@
+{
+  "summary": "Iteration 7 verification of EAS Android APK build fixes (expo-doctor failures). All checks pass: expo-doctor reports 18/18 with exit code 0; app.json android section no longer contains 'navigationBar'; icon.png, adaptive-icon.png, favicon.png are all 512x512; splash-icon.png exists (336x729, accepted by expo-doctor); package.json has expo@~54.0.35, expo-font@~14.0.12, expo-router@~6.0.24, @expo/vector-icons@15.1.1, and resolutions for @expo/vector-icons (15.1.1) and @react-navigation/native (7.1.8). Backend regression: GET /api/ returns 200 with version 1.0.0; POST /api/calc/cytology with Estrus payload returns stage=Estrus correctly. Frontend smoke: splash screen at https://canine-cycle.preview.emergentagent.com loads with TANUVAS seal, doggy logo image, GUIDED BY section, ANIMitra Software credit, Version 1.0.0, and loading bar all visible.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [],
+    "react_native_issues": []
+  },
+  "verification_results": {
+    "expo_doctor_exit_code": 0,
+    "expo_doctor_output": "18/18 checks passed. No issues detected!",
+    "app_json_navigationBar_removed": true,
+    "image_dimensions": {
+      "icon.png": "512x512",
+      "adaptive-icon.png": "512x512",
+      "favicon.png": "512x512",
+      "splash-icon.png": "336x729 (exists; not required to be square per expo-doctor)"
+    },
+    "package_versions": {
+      "expo": "~54.0.35",
+      "expo-font": "~14.0.12",
+      "expo-router": "~6.0.24",
+      "@expo/vector-icons": "15.1.1"
+    },
+    "resolutions_present": {
+      "@expo/vector-icons": "15.1.1",
+      "@react-navigation/native": "7.1.8"
+    },
+    "backend_api_root": "HTTP 200 — {message: Doggy Breeding App API, version: 1.0.0}",
+    "backend_cytology_estrus": "HTTP 200 — stage=Estrus, confidence=92, CI=80.0",
+    "frontend_splash_elements": {
+      "TANUVAS_seal": true,
+      "doggy_logo": true,
+      "GUIDED_BY": true,
+      "ANIMitra_Software": true,
+      "version_1.0.0": true,
+      "loading_bar": true
+    }
+  },
+  "test_report_links": [],
+  "action_items": [],
+  "critical_code_review_comments": [],
+  "updated_files": [],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "EAS build blocker (expo-doctor exit code 1) is resolved. expo-doctor now reports 18/18 passed. All assets and package.json deduplication confirmed. Backend and frontend splash screen remain functional with no regressions. Note: a console warning 'Animated: useNativeDriver is not supported' appears on the web preview — this is expected on web (RCTAnimation is native-only) and does not affect Android/iOS builds. No action needed.",
+  "rca_of_issue": "Original EAS prebuild failure was caused by expo-doctor finding 3 issues: (1) invalid 'android.navigationBar' field in app.json schema, (2) non-square icons (512x513), and (3) duplicate native module dependency trees. All three root causes have been mitigated and verified — expo-doctor exits 0 and EAS Android APK builds should no longer be blocked by the doctor check."
+}

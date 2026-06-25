@@ -19,11 +19,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#1E3A8A"
       },
-      "edgeToEdgeEnabled": true,
-      "navigationBar": {
-        "backgroundColor": "#0F172A",
-        "barStyle": "light-content"
-      }
+      "edgeToEdgeEnabled": true
     },
     "web": {
       "bundler": "metro",
@@ -41,7 +37,8 @@
           "backgroundColor": "#1E3A8A"
         }
       ],
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true
