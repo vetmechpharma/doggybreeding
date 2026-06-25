@@ -1,0 +1,32 @@
+{
+  "summary": "Iteration 5 — Splash screen redesign verified against user mockup at 390x844 mobile viewport. All 25 expected text elements rendered (TANUVAS banner + funding text, doggy logo image, institution card, GUIDED BY pill + 5 doctor names, developer card with ANIMitra branding + Dr. T. Lokesh contact, Version 1.0.0 pill, L O A D I N G ... + progress bar, tap hint, copyright). Both images (TANUVAS seal 2194x2194 and dual-dog logo 434x434) loaded successfully. Tap-to-skip behavior verified — single tap navigates to /login immediately. Backend smoke test: GET /api/ returns 200 with correct payload; POST /api/calc/cytology returns 200 for valid input. Minor Expo deprecation warnings observed in console (textShadow*, shadow* style props and useNativeDriver on web).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [],
+    "react_native_issues": [
+      {"component": "textShadow* style props", "issue": "Deprecation warning: '\"textShadow*\" style props are deprecated. Use \"textShadow\".' Reference: /app/frontend/app/index.tsx:185 (fundedBig uses textShadowColor/textShadowOffset/textShadowRadius)"},
+      {"component": "shadow* style props", "issue": "Deprecation warning: '\"shadow*\" style props are deprecated. Use \"boxShadow\".' Reference: /app/frontend/app/index.tsx:199-202 (card style uses shadowColor/shadowOpacity/shadowRadius/shadowOffset)"},
+      {"component": "Animated useNativeDriver:true on fade", "issue": "Console warns: 'useNativeDriver is not supported because the native animated module is missing. Falling back to JS-based animation.' on web preview. Reference: /app/frontend/app/index.tsx:23 (fade animation uses useNativeDriver:true). Functionally OK on web but generates warning."}
+    ]
+  },
+  "test_report_links": [],
+  "action_items": [
+    "(Cosmetic only) Replace deprecated `textShadow*` props on `fundedBig` with the new `textShadow` shorthand to clear the console warning.",
+    "(Cosmetic only) Replace deprecated `shadow*` props on `card` style with `boxShadow` to clear console warning (note: keep RN `elevation` for Android).",
+    "(Optional) Set `useNativeDriver:false` on the `fade` animation (or platform-gate it) to suppress the web warning."
+  ],
+  "critical_code_review_comments": [
+    "All expected mockup elements are present and correctly themed.",
+    "Pressable wraps the entire ScrollView so tap-to-skip works from anywhere on screen — verified.",
+    "Auto-route timer (6s) and tap handler are guarded by `navigated` flag to prevent double navigation — good.",
+    "Images use stable absolute URLs from customer-assets CDN; both load with valid dimensions."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Splash screen at / fully matches mockup. ScrollView is used so on 390x844 the bottom (developer card, version, loading, copyright) requires scrolling — DOM text is still in document so .innerText assertions work without scrolling. Tap-to-skip routes to /login (unauth state). Backend untouched and healthy."
+}
