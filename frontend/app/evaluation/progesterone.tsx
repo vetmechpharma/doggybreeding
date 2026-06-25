@@ -9,6 +9,7 @@ import { useToast } from "@/src/components/Toast";
 import { ScreenHeader } from "@/src/components/ScreenHeader";
 import { stageColors } from "@/src/theme";
 import { api } from "@/src/api/client";
+import { sheetsSync } from "@/src/api/sheetsSync";
 
 const RANGES = [
   { range: "< 0.5", label: "Anestrus", color: stageColors.ANESTRUS, min: -1, max: 0.5 },
@@ -43,6 +44,7 @@ export default function ProgesteroneCalc() {
     setBusy(true);
     try {
       const result = await api.post("/calc/progesterone", { value: v }, { proestrus_bleeding_date: params.proestrus_date || undefined });
+      const dog = await api.get<any>(`/dogs/${params.dog_id}`).catch(() => null);
       const ev = await api.post<{ id: string }>("/evaluations", {
         user_id: user.id,
         dog_id: params.dog_id,
@@ -50,6 +52,13 @@ export default function ProgesteroneCalc() {
         inputs: { value: v },
         result,
         proestrus_bleeding_date: params.proestrus_date || "",
+      });
+      sheetsSync.evaluation({
+        id: ev.id, user_id: user.id, user_name: user.name, user_email: user.email, user_mobile: user.mobile,
+        dog_name: dog?.dog_name, owner_name: dog?.owner_name, owner_mobile: dog?.owner_mobile,
+        breed: dog?.breed, age: dog?.age, sex: dog?.sex, whelping_count: dog?.whelping_count,
+        previous_whelping_date: dog?.previous_whelping_date, proestrus_bleeding_date: dog?.proestrus_bleeding_date || params.proestrus_date,
+        type: "progesterone", inputs: { value: v }, result,
       });
       router.replace({ pathname: "/evaluation/result", params: { eval_id: ev.id } });
     } catch (e: any) {

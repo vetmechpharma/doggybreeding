@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { storage } from "@/src/utils/storage";
 import { api } from "@/src/api/client";
+import { sheetsSync } from "@/src/api/sheetsSync";
 
 export interface UserProfile {
   id: string;
@@ -74,6 +75,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
     const u = await api.post<UserProfile>("/users", payload);
     await persist(u);
+    sheetsSync.user({ ...u, app_version: "1.0.0" });
     return u;
   }, [persist]);
 

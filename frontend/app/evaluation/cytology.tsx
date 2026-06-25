@@ -9,6 +9,7 @@ import { useToast } from "@/src/components/Toast";
 import { ScreenHeader } from "@/src/components/ScreenHeader";
 import { DonutChart } from "@/src/components/DonutChart";
 import { api } from "@/src/api/client";
+import { sheetsSync } from "@/src/api/sheetsSync";
 
 const CELL_COLORS = { pc: "#3B82F6", ic: "#A855F7", sic: "#F97316", sc: "#22C55E", cc: "#EF4444" };
 
@@ -123,6 +124,7 @@ export default function CytologyCalc() {
     setBusy(true);
     try {
       const result = await api.post("/calc/cytology", nums, { proestrus_bleeding_date: params.proestrus_date || undefined });
+      const dog = await api.get<any>(`/dogs/${params.dog_id}`).catch(() => null);
       const ev = await api.post<{ id: string }>("/evaluations", {
         user_id: user.id,
         dog_id: params.dog_id,
@@ -130,6 +132,13 @@ export default function CytologyCalc() {
         inputs: nums,
         result,
         proestrus_bleeding_date: params.proestrus_date || "",
+      });
+      sheetsSync.evaluation({
+        id: ev.id, user_id: user.id, user_name: user.name, user_email: user.email, user_mobile: user.mobile,
+        dog_name: dog?.dog_name, owner_name: dog?.owner_name, owner_mobile: dog?.owner_mobile,
+        breed: dog?.breed, age: dog?.age, sex: dog?.sex, whelping_count: dog?.whelping_count,
+        previous_whelping_date: dog?.previous_whelping_date, proestrus_bleeding_date: dog?.proestrus_bleeding_date || params.proestrus_date,
+        type: "cytology", inputs: nums, result,
       });
       router.replace({ pathname: "/evaluation/result", params: { eval_id: ev.id } });
     } catch (e: any) {

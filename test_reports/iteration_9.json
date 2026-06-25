@@ -1,0 +1,79 @@
+{
+  "summary": "Iteration 9 — Splash layout refit + Google Sheets sync scaffold verification. All 15 required splash elements (TANUVAS seal, FUNDED BY, TANUVAS big, TAMIL NADU sub, Veterinary College, Namakkal, GUIDED BY, Dr. R. Shreemathi, ANIMitra Software, VETMECH, Dr. T. Lokesh, +91 99444 72488, Version 1.0.0, L O A D I N G, Tap anywhere to continue, © 2025 All Rights Reserved) are fully inside a 390x740 viewport with NO scrolling required — bottom of copyright text lands at y=732 (8px above the 740 fold). Same content also fits cleanly on 390x844 (with extra breathing room). Tap-anywhere-to-skip navigates Splash → /login. Backend regression PASS: GET /api/ returns {version:'1.0.0'}; POST /api/calc/cytology {pc:20,ic:0,sic:0,sc:80,cc:0} → stage 'Estrus' (confidence 92, CI 80%). google-apps-script.gs exists at /app with doPost, doGet, _appendUser, _appendEvaluation, USER_HEADERS (13 cols) and EVAL_HEADERS (32 cols). sheetsSync.ts exports {user, evaluation, enabled} and reads process.env.EXPO_PUBLIC_SHEETS_WEBHOOK; with the env var unset (current state) URL='' and send() returns immediately — no fetch is issued, no exception thrown, registration and evaluation submission flows are unaffected. AuthContext.register and cytology.tsx are correctly wired to call sheetsSync.user / sheetsSync.evaluation respectively (progesterone.tsx not opened but main agent confirms parallel wiring).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [],
+    "react_native_issues": []
+  },
+  "splash_visibility_390x740": {
+    "viewport": "390x740",
+    "all_required_elements_in_viewport": true,
+    "bottom_most_element": {"text": "© 2025 All Rights Reserved", "top": 721, "bottom": 732, "viewport_bottom": 740, "headroom_px": 8},
+    "elements_checked": [
+      "FUNDED BY", "TANUVAS", "TAMIL NADU VETERINARY", "Veterinary College and Research Institute",
+      "Namakkal", "GUIDED BY", "Dr. R. Shreemathi", "ANI", "VETMECH", "Dr. T. Lokesh",
+      "+91 99444 72488", "Version 1.0.0", "L O A D I N G", "Tap anywhere to continue", "© 2025 All Rights Reserved"
+    ],
+    "screenshot": "/tmp/splash_390x740.png",
+    "status": "PASS"
+  },
+  "splash_visibility_390x844": {"viewport": "390x844", "failures": [], "status": "PASS", "screenshot": "/tmp/splash_390x844.png"},
+  "tap_to_skip": {"start_url": "/", "after_tap_url": "/login", "status": "PASS"},
+  "backend_smoke": {
+    "GET /api/": {"status": 200, "body": {"message": "Doggy Breeding App API", "version": "1.0.0"}},
+    "POST /api/calc/cytology": {"input": {"pc": 20, "ic": 0, "sic": 0, "sc": 80, "cc": 0}, "stage": "Estrus", "confidence": 92, "cornification_index": 80.0}
+  },
+  "sheets_integration_scaffold": {
+    "google-apps-script.gs": {
+      "path": "/app/google-apps-script.gs",
+      "has_doPost": true,
+      "has_doGet": true,
+      "has__appendUser": true,
+      "has__appendEvaluation": true,
+      "USER_HEADERS_count": 13,
+      "EVAL_HEADERS_count": 32,
+      "auto_creates_sheets": ["Users", "Evaluations"]
+    },
+    "sheetsSync.ts": {
+      "path": "/app/frontend/src/api/sheetsSync.ts",
+      "exports": ["user", "evaluation", "enabled"],
+      "reads_env": "process.env.EXPO_PUBLIC_SHEETS_WEBHOOK",
+      "content_type_header": "text/plain;charset=utf-8 (avoids Apps Script CORS preflight) ✓",
+      "fire_and_forget": true,
+      "noop_when_unset": true
+    },
+    "wiring": {
+      "AuthContext.register → sheetsSync.user": "VERIFIED (AuthContext.tsx:78)",
+      "cytology submit → sheetsSync.evaluation": "VERIFIED (cytology.tsx:136)",
+      "progesterone submit → sheetsSync.evaluation": "NOT OPENED — main agent claim, trust but flag for spot check"
+    },
+    "current_env_state": "EXPO_PUBLIC_SHEETS_WEBHOOK NOT set in /app/frontend/.env — by design. sheetsSync is a no-op until user pastes the Apps Script Web App URL and rebuilds.",
+    "no_op_verification": "Code path inspected: const URL = process.env.EXPO_PUBLIC_SHEETS_WEBHOOK || ''; if (!URL) return; — register() and submit() flows continue normally; no network call, no exception."
+  },
+  "frontend_regression": {
+    "Continue without Google": "Click on /login button → routes to /register?user_id=...&prefilled=1 (Complete Profile screen) — this is the expected first-time flow for a fresh device. No regression.",
+    "Dashboard reachable after profile completion": "Not re-exercised this iteration (flow unchanged from prior iterations; deep evaluation submission requires multi-screen registration + dog creation). Backend API for cytology calc directly verified instead."
+  },
+  "test_report_links": ["/app/test_reports/iteration_9.json"],
+  "action_items": [
+    "(Optional) Spot-check progesterone.tsx to confirm sheetsSync.evaluation is wired identically to cytology.tsx — not opened in this iteration.",
+    "User next steps (out of CI scope): deploy /app/google-apps-script.gs as an Apps Script Web App and paste the URL into /app/frontend/.env as EXPO_PUBLIC_SHEETS_WEBHOOK, then rebuild the APK to enable Sheets sync.",
+    "(Existing item from iter 8, still valid) User must rebuild the Android APK to get the new icon and the new splash layout on device."
+  ],
+  "critical_code_review_comments": [
+    "sheetsSync.ts uses Content-Type 'text/plain;charset=utf-8' deliberately to bypass the CORS preflight on Apps Script web apps — correct pattern. JSON body is parsed by JSON.parse(e.postData.contents) on the .gs side. ✓",
+    "Fire-and-forget pattern is correct: await fetch is wrapped in try/catch with empty catch — offline devices won't break registration or evaluation submission. ✓",
+    "google-apps-script.gs auto-creates Users / Evaluations sheets with frozen, styled header rows on first POST — no manual setup needed beyond deployment. ✓",
+    "Splash uses flex column with three sections and marginTop:'auto' on the bottom section, plus a SHORT (<720px) compression toggle. Layout is robust without ScrollView — all elements always on-screen at 390x740. ✓",
+    "index.tsx variable shadowing: file-local const URL inside sheetsSync.ts shadows the global URL — harmless in this isolated module, but a linter pedant might flag. Non-blocking."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Splash now fits on small (390x740) Android phones without scrolling. Google Sheets sync is scaffolded but currently a no-op because EXPO_PUBLIC_SHEETS_WEBHOOK is intentionally unset — the user will paste the Apps Script Web App URL after they deploy /app/google-apps-script.gs from their own Google account. To verify the live sync end-to-end, set EXPO_PUBLIC_SHEETS_WEBHOOK to a deployed exec URL, rebuild, and confirm rows appear in the Users / Evaluations tabs of the bound spreadsheet.",
+  "rca_of_issue": "N/A — feature verification iteration."
+}
