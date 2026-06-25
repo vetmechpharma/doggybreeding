@@ -1,0 +1,46 @@
+{
+  "summary": "Iteration 8 — Asset-only fix verification for native Android splash/icon branding. All 4 new PNGs validated (correct dimensions, distinct md5s, correct transparency/opacity). app.json checked for splash-screen config, android.versionCode=2, adaptiveIcon bg=#1E3A8A. expo-doctor: 18/18 passed. Backend GET /api/ returns 200 with correct payload. Frontend web smoke loads the branded Doggy Breeding App splash (TANUVAS, dual-dog doggy logo, GUIDED BY, ANIMitra). NOTE: Native pre-RN splash on Android device cannot be verified in CI — only assets+config validated. User must rebuild APK (versionCode 2) and reinstall to see the new native splash.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [],
+    "react_native_issues": []
+  },
+  "asset_validation": {
+    "icon_png": {"path": "/app/frontend/assets/images/icon.png", "size": "1024x1024", "mode": "RGBA", "alpha_mean": 255.0, "md5": "dbf1119367b3d72dba16c7cd7bc8dd63", "status": "PASS - opaque navy bg with logo"},
+    "adaptive_icon_png": {"path": "/app/frontend/assets/images/adaptive-icon.png", "size": "1024x1024", "mode": "RGBA", "alpha_mean": 97.8, "md5": "4b729cd3ceb97eee74a381e74e598f90", "status": "PASS - transparent bg with logo in safe zone"},
+    "splash_icon_png": {"path": "/app/frontend/assets/images/splash-icon.png", "size": "1024x1024", "mode": "RGBA", "alpha_mean": 188.3, "md5": "fc1b54db49dc9c6b98d804736d369c6a", "status": "PASS - transparent bg with logo, distinct from defaults"},
+    "favicon_png": {"path": "/app/frontend/assets/images/favicon.png", "size": "64x64", "mode": "RGBA", "md5": "9c6ebe19c3c5639698c789ee03928cf6", "status": "PASS - intentionally small per request"},
+    "all_four_distinct": true
+  },
+  "app_json_checks": {
+    "expo_splash_screen_image": "./assets/images/splash-icon.png ✓",
+    "expo_splash_screen_backgroundColor": "#1E3A8A ✓",
+    "expo_splash_screen_imageWidth": 220,
+    "android_versionCode": 2,
+    "android_adaptiveIcon_backgroundColor": "#1E3A8A ✓",
+    "status": "PASS"
+  },
+  "expo_doctor": {"exit_code": 0, "result": "18/18 checks passed. No issues detected!"},
+  "backend_smoke": {"endpoint": "GET /api/", "status_code": 200, "body": {"message": "Doggy Breeding App API", "version": "1.0.0"}, "status": "PASS"},
+  "frontend_smoke": {"url": "https://canine-cycle.preview.emergentagent.com", "rendered_text_includes": ["TANUVAS", "doggy breeding app", "GUIDED BY", "ANIMitra"], "screenshot": "/tmp/frontend_smoke.png", "status": "PASS"},
+  "test_report_links": ["/app/test_reports/iteration_8.json"],
+  "action_items": [
+    "User must rebuild the Android APK (EAS/Expo build) with the new assets and android.versionCode=2, then reinstall on the real device. Only a real-device install can confirm the native pre-RN splash now shows the doggy logo on navy (cannot be verified in this CI/web preview)."
+  ],
+  "critical_code_review_comments": [
+    "Verified that splash-icon.png is no longer the default Emergent 'e' on navy — md5 changed and it is now a transparent-bg image containing the doggy logo. Combined with the expo-splash-screen plugin backgroundColor=#1E3A8A, the native splash will be the navy bg with doggy logo at imageWidth=220.",
+    "android.versionCode bumped to 2 — required so the new APK can be installed over the previous v1."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Native Android splash/icon assets and config are validated. The only remaining verification is a real-device install of a freshly rebuilt APK (versionCode=2) to visually confirm the navy+doggy-logo native splash. This cannot be done in the CI/web preview environment.",
+  "rca_of_issue": "RCA: Previous APK shipped with the unchanged default Emergent template PNGs at assets/images/{icon,adaptive-icon,splash-icon,favicon}.png. The expo-splash-screen plugin renders splash-icon.png on the configured backgroundColor at the OS-native stage before React Native boots, so the default 'Start building apps on emergent' icon image was shown. Mitigation: regenerate all four PNGs with the official Doggy Breeding App dual-dog logo composited at appropriate scales (icon opaque 78%, adaptive 62% safe zone, splash 86% transparent, favicon 64x64) and bump android.versionCode to 2 so the user can install over v1. Verified asset dimensions, transparency, distinctness, and config in app.json; expo-doctor 18/18 passes."
+}
