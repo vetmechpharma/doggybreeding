@@ -17,9 +17,13 @@
       "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#000"
+        "backgroundColor": "#1E3A8A"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "navigationBar": {
+        "backgroundColor": "#0F172A",
+        "barStyle": "light-content"
+      }
     },
     "web": {
       "bundler": "metro",
@@ -32,9 +36,9 @@
         "expo-splash-screen",
         {
           "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
+          "imageWidth": 220,
           "resizeMode": "contain",
-          "backgroundColor": "#000"
+          "backgroundColor": "#1E3A8A"
         }
       ],
       "@react-native-community/datetimepicker"

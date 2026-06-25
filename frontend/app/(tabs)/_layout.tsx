@@ -1,11 +1,18 @@
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTheme } from "@/src/theme/ThemeContext";
 
 export default function TabsLayout() {
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
+
+  // Android edge-to-edge (Android 15+) reserves room for the nav-gesture bar.
+  // Use the maximum of insets.bottom and a sensible floor so the tab buttons
+  // are always above the system gestures area.
+  const bottomPad = Math.max(insets.bottom, Platform.OS === "android" ? 14 : 8);
+
   return (
     <Tabs
       screenOptions={{
@@ -15,11 +22,13 @@ export default function TabsLayout() {
         tabBarStyle: {
           backgroundColor: theme.card,
           borderTopColor: theme.border,
-          paddingTop: 6,
-          paddingBottom: insets.bottom > 0 ? insets.bottom : 8,
-          height: 60 + (insets.bottom > 0 ? insets.bottom : 8),
+          paddingTop: 8,
+          paddingBottom: bottomPad,
+          height: 58 + bottomPad,
         },
+        tabBarItemStyle: { paddingVertical: 4 },
         tabBarLabelStyle: { fontSize: 11, fontWeight: "700" },
+        sceneStyle: { backgroundColor: theme.bg },
       }}
     >
       <Tabs.Screen

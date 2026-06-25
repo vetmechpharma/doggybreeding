@@ -10,8 +10,11 @@ export const ScreenHeader: React.FC<{ title: string; subtitle?: string; right?: 
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { theme } = useTheme();
+  // Always reserve at least the status-bar height even when insets report 0
+  // (edge-to-edge on some Android devices initially returns 0 before measure).
+  const top = Math.max(insets.top, 12);
   return (
-    <View style={[styles.wrap, { paddingTop: insets.top + 8, backgroundColor: theme.bg, borderBottomColor: theme.border }]}>
+    <View style={[styles.wrap, { paddingTop: top + 8, backgroundColor: theme.bg, borderBottomColor: theme.border }]}>
       <View style={styles.row}>
         {back ? (
           <Pressable testID="screen-back-button" onPress={() => router.back()} hitSlop={12} style={styles.backBtn}>

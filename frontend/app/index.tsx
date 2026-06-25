@@ -5,6 +5,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "@/src/auth/AuthContext";
+import { PatternBackground } from "@/src/components/PatternBackground";
 
 const LOGO_URL = "https://customer-assets.emergentagent.com/job_453e719f-8513-486c-b1fd-4be9ca8fb67d/artifacts/j7h9vi8t_logo.jpg";
 const TANUVAS_URL = "https://customer-assets.emergentagent.com/job_canine-cycle/artifacts/365nah86_tanuvas_logo.png";
@@ -15,14 +16,21 @@ export default function Splash() {
   const { user, loading } = useAuth();
   const progress = useRef(new Animated.Value(0)).current;
   const fade = useRef(new Animated.Value(0)).current;
+  const float = useRef(new Animated.Value(0)).current;
   const [navigated, setNavigated] = useState(false);
 
   useEffect(() => {
     Animated.parallel([
       Animated.timing(progress, { toValue: 1, duration: SPLASH_DURATION - 200, easing: Easing.out(Easing.cubic), useNativeDriver: false }),
-      Animated.timing(fade, { toValue: 1, duration: 500, useNativeDriver: true }),
+      Animated.timing(fade, { toValue: 1, duration: 600, useNativeDriver: true }),
     ]).start();
-  }, [progress, fade]);
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(float, { toValue: 1, duration: 2200, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+        Animated.timing(float, { toValue: 0, duration: 2200, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+      ]),
+    ).start();
+  }, [progress, fade, float]);
 
   const go = () => {
     if (navigated || loading) return;
@@ -39,122 +47,113 @@ export default function Splash() {
   }, [loading, user]);
 
   const barW = progress.interpolate({ inputRange: [0, 1], outputRange: ["0%", "100%"] });
+  const logoY = float.interpolate({ inputRange: [0, 1], outputRange: [0, -8] });
 
   return (
     <Pressable testID="splash-screen" onPress={go} style={{ flex: 1 }}>
       <LinearGradient
-        colors={["#1E3A8A", "#6D28D9", "#DB2777"]}
-        locations={[0, 0.55, 1]}
+        colors={["#0F172A", "#1E3A8A", "#6D28D9", "#DB2777"]}
+        locations={[0, 0.3, 0.7, 1]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={{ flex: 1 }}
       >
-        {/* Decorative bg blobs */}
-        <View style={styles.blob1} />
-        <View style={styles.blob2} />
-        <View style={styles.blob3} />
+        <PatternBackground color="#ffffff" opacity={0.05} />
 
         <SafeAreaView style={{ flex: 1 }} edges={["top", "bottom"]}>
           <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
             <Animated.View style={{ opacity: fade, alignItems: "center", width: "100%" }}>
-              {/* TANUVAS Funding banner */}
-              <Image source={{ uri: TANUVAS_URL }} style={styles.tanuvasSeal} resizeMode="contain" />
-              <View style={styles.fundedBanner}>
-                <Ionicons name="leaf" size={14} color="#FFD700" style={{ transform: [{ rotate: "-30deg" }] }} />
+              {/* TANUVAS — minimal, no card */}
+              <View style={styles.topRow}>
+                <Image source={{ uri: TANUVAS_URL }} style={styles.tanuvasSeal} resizeMode="contain" />
+              </View>
+              <View style={styles.fundedRow}>
+                <View style={styles.leafLine} />
                 <Text style={styles.fundedSmall}>FUNDED BY</Text>
-                <Ionicons name="leaf" size={14} color="#FFD700" style={{ transform: [{ rotate: "30deg" }, { scaleX: -1 }] }} />
+                <View style={styles.leafLine} />
               </View>
               <Text style={styles.fundedBig}>TANUVAS</Text>
-              <Text style={styles.fundedSub}>TAMIL NADU VETERINARY AND</Text>
-              <Text style={styles.fundedSub}>ANIMAL SCIENCES UNIVERSITY</Text>
+              <Text style={styles.fundedSub}>TAMIL NADU VETERINARY AND ANIMAL SCIENCES UNIVERSITY</Text>
 
-              {/* Doggy logo + wordmark */}
-              <Image source={{ uri: LOGO_URL }} style={styles.doggyLogo} resizeMode="contain" />
-
-              {/* Institution card */}
-              <Card>
-                <View style={styles.cardRow}>
-                  <View style={styles.cardIcon}>
-                    <Ionicons name="business" size={22} color="#4338CA" />
+              {/* Logo with circular gradient frame so the white bg looks intentional */}
+              <Animated.View style={[styles.logoFrame, { transform: [{ translateY: logoY }] }]}>
+                <LinearGradient
+                  colors={["rgba(255,255,255,0.9)", "rgba(255,255,255,0.55)"]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.logoRing}
+                >
+                  <View style={styles.logoInner}>
+                    <Image source={{ uri: LOGO_URL }} style={styles.logoImg} resizeMode="contain" />
                   </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.cardTitle}>Veterinary College and Research Institute</Text>
-                    <Text style={styles.cardSub}>Namakkal</Text>
-                    <Text style={styles.cardDept}>Department of Veterinary{"\n"}Gynaecology and Obstetrics</Text>
-                  </View>
-                </View>
-              </Card>
+                </LinearGradient>
+                {/* Glow */}
+                <View style={styles.glow1} />
+                <View style={styles.glow2} />
+              </Animated.View>
 
-              {/* Guided By card */}
-              <View style={styles.guidedHeader}>
-                <View style={styles.guidedPill}>
-                  <Text style={styles.guidedPillText}>GUIDED BY</Text>
-                </View>
-              </View>
-              <Card>
-                <View style={styles.facultyGrid}>
-                  <Text style={styles.facultyName}>Dr. R. Shreemathi</Text>
-                  <Text style={styles.facultySep}>|</Text>
-                  <Text style={styles.facultyName}>Dr. Mridul Sarma</Text>
-                  <Text style={styles.facultySep}>|</Text>
-                  <Text style={styles.facultyName}>Dr. S. Manokaran</Text>
-                </View>
-                <View style={[styles.facultyGrid, { marginTop: 6 }]}>
-                  <Text style={styles.facultyName}>Dr. M. Palanisamy</Text>
-                  <Text style={styles.facultySep}>|</Text>
-                  <Text style={styles.facultyName}>Dr. M. Selvaraju</Text>
-                </View>
-              </Card>
+              {/* Single unified info panel — no multiple cards */}
+              <View style={styles.infoPanel}>
+                <Text style={styles.instTitle}>Veterinary College and Research Institute</Text>
+                <Text style={styles.instCity}>Namakkal</Text>
+                <Text style={styles.instDept}>Department of Veterinary Gynaecology and Obstetrics</Text>
 
-              {/* Developer / Contact card */}
-              <Card>
+                <View style={styles.hairline} />
+
+                <View style={styles.guidedLabel}>
+                  <Ionicons name="ribbon" size={11} color="#FFD700" />
+                  <Text style={styles.guidedText}>GUIDED BY</Text>
+                  <Ionicons name="ribbon" size={11} color="#FFD700" />
+                </View>
+                <Text style={styles.facultyLine}>
+                  Dr. R. Shreemathi  ·  Dr. Mridul Sarma  ·  Dr. S. Manokaran
+                </Text>
+                <Text style={styles.facultyLine}>
+                  Dr. M. Palanisamy  ·  Dr. M. Selvaraju
+                </Text>
+
+                <View style={styles.hairline} />
+
                 <View style={styles.devRow}>
-                  <View style={[styles.devSide, { borderRightWidth: 1, borderRightColor: "rgba(0,0,0,0.08)", paddingRight: 12 }]}>
-                    <View style={styles.devLogoBadge}>
-                      <Text style={styles.devLogoA}>A</Text>
-                    </View>
+                  <View>
                     <Text style={styles.devLabel}>Developed by</Text>
                     <Text style={styles.devName}>
-                      <Text style={{ color: "#1E3A8A" }}>ANI</Text>
-                      <Text style={{ color: "#F97316" }}>Mitra</Text>
-                      <Text style={{ color: "#1E3A8A" }}> Software</Text>
+                      <Text style={{ color: "#fff" }}>ANI</Text>
+                      <Text style={{ color: "#FB923C" }}>Mitra</Text>
+                      <Text style={{ color: "#fff" }}> Software</Text>
                     </Text>
-                    <Text style={styles.devTagline}>(A Division of VETMECH PHARMACEUTICALS PRIVATE LIMITED)</Text>
-                  </View>
-                  <View style={styles.devSide}>
-                    <View style={styles.contactRow}>
-                      <View style={[styles.contactIcon, { backgroundColor: "#6366F1" }]}>
-                        <Ionicons name="person" size={14} color="#fff" />
-                      </View>
-                      <Text style={styles.contactText}>Dr. T. Lokesh</Text>
-                    </View>
-                    <View style={[styles.contactRow, { marginTop: 8 }]}>
-                      <View style={[styles.contactIcon, { backgroundColor: "#EC4899" }]}>
-                        <Ionicons name="call" size={14} color="#fff" />
-                      </View>
-                      <Text style={styles.contactText}>+91 99444 72488</Text>
-                    </View>
+                    <Text style={styles.devSub}>A Division of VETMECH Pharmaceuticals Pvt. Ltd.</Text>
                   </View>
                 </View>
-              </Card>
+                <View style={styles.contactRow}>
+                  <View style={styles.contactChip}>
+                    <Ionicons name="person" size={12} color="#fff" />
+                    <Text style={styles.contactText}>Dr. T. Lokesh</Text>
+                  </View>
+                  <View style={styles.contactChip}>
+                    <Ionicons name="call" size={12} color="#fff" />
+                    <Text style={styles.contactText}>+91 99444 72488</Text>
+                  </View>
+                </View>
+              </View>
 
-              {/* Version pill */}
+              {/* Version + loading */}
               <View style={styles.versionPill}>
+                <View style={styles.versionDot} />
                 <Text style={styles.versionText}>Version 1.0.0</Text>
               </View>
 
-              {/* Loading */}
-              <Text style={styles.loadingText}>L O A D I N G ...</Text>
               <View style={styles.barTrack}>
                 <Animated.View style={[styles.barFill, { width: barW }]}>
                   <LinearGradient
-                    colors={["#A78BFA", "#F472B6", "#fff"]}
+                    colors={["#A78BFA", "#F472B6", "#FFFFFF"]}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
-                    style={{ flex: 1, borderRadius: 4 }}
+                    style={{ flex: 1 }}
                   />
                 </Animated.View>
               </View>
+              <Text style={styles.loadingText}>L O A D I N G . . .</Text>
 
               <Text testID="splash-skip-hint" style={styles.skipHint}>Tap anywhere to continue</Text>
               <Text style={styles.copyright}>© 2025 All Rights Reserved</Text>
@@ -166,74 +165,74 @@ export default function Splash() {
   );
 }
 
-const Card: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <View style={styles.card}>{children}</View>
-);
-
 const styles = StyleSheet.create({
-  scroll: { paddingHorizontal: 18, paddingTop: 10, paddingBottom: 24, alignItems: "center" },
-
-  // Decorative blobs
-  blob1: { position: "absolute", width: 320, height: 320, borderRadius: 320, backgroundColor: "rgba(255,255,255,0.06)", top: -80, right: -80 },
-  blob2: { position: "absolute", width: 260, height: 260, borderRadius: 260, backgroundColor: "rgba(255,255,255,0.05)", bottom: 80, left: -60 },
-  blob3: { position: "absolute", width: 180, height: 180, borderRadius: 180, backgroundColor: "rgba(255,255,255,0.04)", top: 200, left: -40 },
+  scroll: { paddingHorizontal: 24, paddingVertical: 16, alignItems: "center" },
 
   // TANUVAS
-  tanuvasSeal: { width: 96, height: 96, marginTop: 4 },
-  fundedBanner: { flexDirection: "row", alignItems: "center", gap: 8, marginTop: 6 },
-  fundedSmall: { color: "#fff", fontSize: 11, fontWeight: "800", letterSpacing: 2 },
-  fundedBig: { color: "#fff", fontSize: 32, fontWeight: "900", letterSpacing: 3, marginTop: 2, textShadowColor: "rgba(0,0,0,0.3)", textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 4 },
-  fundedSub: { color: "#fff", fontSize: 11, fontWeight: "800", letterSpacing: 1.2, marginTop: 2 },
+  topRow: { alignItems: "center", marginTop: 4 },
+  tanuvasSeal: { width: 88, height: 88, marginBottom: 4 },
+  fundedRow: { flexDirection: "row", alignItems: "center", gap: 10, marginTop: 4 },
+  leafLine: { width: 30, height: 1, backgroundColor: "rgba(255,215,0,0.8)" },
+  fundedSmall: { color: "rgba(255,215,0,0.95)", fontSize: 10, fontWeight: "900", letterSpacing: 3 },
+  fundedBig: { color: "#fff", fontSize: 30, fontWeight: "900", letterSpacing: 4, marginTop: 2 },
+  fundedSub: { color: "rgba(255,255,255,0.85)", fontSize: 10, fontWeight: "700", letterSpacing: 1.4, marginTop: 4, textAlign: "center", paddingHorizontal: 12 },
 
-  // Doggy logo
-  doggyLogo: { width: 240, height: 240, marginTop: 18, backgroundColor: "transparent" },
-
-  // Cards (glass)
-  card: {
-    width: "100%",
-    backgroundColor: "rgba(255,255,255,0.92)",
-    borderRadius: 18,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    marginTop: 14,
-    shadowColor: "#000",
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 6,
+  // Logo with framed circle
+  logoFrame: { marginTop: 22, alignItems: "center", justifyContent: "center", width: 220, height: 220 },
+  logoRing: {
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 6,
   },
-  cardRow: { flexDirection: "row", alignItems: "center", gap: 12 },
-  cardIcon: { width: 48, height: 48, borderRadius: 24, backgroundColor: "#EDE9FE", alignItems: "center", justifyContent: "center" },
-  cardTitle: { fontSize: 14, fontWeight: "800", color: "#1E3A8A", letterSpacing: -0.2 },
-  cardSub: { fontSize: 13, fontWeight: "800", color: "#1E3A8A", marginTop: 2 },
-  cardDept: { fontSize: 12, color: "#475569", marginTop: 4, lineHeight: 16, fontWeight: "600" },
+  logoInner: {
+    flex: 1,
+    width: "100%",
+    borderRadius: 96,
+    overflow: "hidden",
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  logoImg: { width: "100%", height: "100%" },
+  glow1: { position: "absolute", width: 240, height: 240, borderRadius: 240, borderWidth: 1, borderColor: "rgba(255,255,255,0.25)" },
+  glow2: { position: "absolute", width: 270, height: 270, borderRadius: 270, borderWidth: 1, borderColor: "rgba(255,255,255,0.12)" },
 
-  // Guided By
-  guidedHeader: { marginTop: 14, alignItems: "center" },
-  guidedPill: { backgroundColor: "rgba(255,255,255,0.92)", paddingHorizontal: 22, paddingVertical: 7, borderRadius: 999 },
-  guidedPillText: { color: "#4338CA", fontSize: 12, fontWeight: "900", letterSpacing: 2 },
-  facultyGrid: { flexDirection: "row", justifyContent: "center", alignItems: "center", flexWrap: "wrap", gap: 4 },
-  facultyName: { color: "#1E3A8A", fontWeight: "700", fontSize: 12 },
-  facultySep: { color: "#94A3B8", marginHorizontal: 4 },
+  // Info panel (no inner cards)
+  infoPanel: {
+    width: "100%",
+    marginTop: 28,
+    paddingHorizontal: 6,
+    alignItems: "center",
+  },
+  instTitle: { color: "#fff", fontSize: 15, fontWeight: "800", textAlign: "center", letterSpacing: -0.2 },
+  instCity: { color: "#fff", fontSize: 13, fontWeight: "700", marginTop: 2 },
+  instDept: { color: "rgba(255,255,255,0.85)", fontSize: 12, marginTop: 4, textAlign: "center", lineHeight: 17, fontWeight: "500" },
+  hairline: { width: "60%", height: StyleSheet.hairlineWidth, backgroundColor: "rgba(255,255,255,0.4)", marginVertical: 14 },
 
-  // Developer card
-  devRow: { flexDirection: "row", alignItems: "center", gap: 12 },
-  devSide: { flex: 1 },
-  devLogoBadge: { width: 36, height: 36, borderRadius: 8, backgroundColor: "#fff", borderWidth: 2, borderColor: "#1E3A8A", alignItems: "center", justifyContent: "center", marginBottom: 4 },
-  devLogoA: { color: "#1E3A8A", fontSize: 22, fontWeight: "900", letterSpacing: -1 },
-  devLabel: { color: "#475569", fontSize: 11, fontWeight: "600" },
-  devName: { fontSize: 15, fontWeight: "900", letterSpacing: -0.3 },
-  devTagline: { fontSize: 8.5, color: "#64748B", marginTop: 3, fontWeight: "700", lineHeight: 11 },
-  contactRow: { flexDirection: "row", alignItems: "center", gap: 8 },
-  contactIcon: { width: 26, height: 26, borderRadius: 13, alignItems: "center", justifyContent: "center" },
-  contactText: { color: "#1E3A8A", fontWeight: "800", fontSize: 12 },
+  guidedLabel: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 8 },
+  guidedText: { color: "#FFD700", fontSize: 10, fontWeight: "900", letterSpacing: 3 },
+  facultyLine: { color: "rgba(255,255,255,0.95)", fontSize: 11.5, fontWeight: "700", marginTop: 2, textAlign: "center" },
+
+  devRow: { alignItems: "center" },
+  devLabel: { color: "rgba(255,255,255,0.75)", fontSize: 10, fontWeight: "700", letterSpacing: 1.4, textAlign: "center" },
+  devName: { fontSize: 18, fontWeight: "900", letterSpacing: -0.3, textAlign: "center", marginTop: 3 },
+  devSub: { color: "rgba(255,255,255,0.75)", fontSize: 10, fontWeight: "600", marginTop: 3, textAlign: "center" },
+  contactRow: { flexDirection: "row", flexWrap: "wrap", justifyContent: "center", gap: 8, marginTop: 10 },
+  contactChip: { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999, backgroundColor: "rgba(255,255,255,0.14)", borderWidth: 1, borderColor: "rgba(255,255,255,0.18)" },
+  contactText: { color: "#fff", fontSize: 11, fontWeight: "700" },
 
   // Version + loading
-  versionPill: { marginTop: 14, backgroundColor: "rgba(255,255,255,0.18)", borderColor: "rgba(255,255,255,0.5)", borderWidth: 1, paddingHorizontal: 18, paddingVertical: 5, borderRadius: 999 },
-  versionText: { color: "#fff", fontWeight: "800", fontSize: 11, letterSpacing: 1.2 },
-  loadingText: { color: "#fff", fontSize: 13, fontWeight: "900", letterSpacing: 4, marginTop: 14 },
-  barTrack: { width: "70%", height: 6, backgroundColor: "rgba(255,255,255,0.2)", borderRadius: 6, overflow: "hidden", marginTop: 8 },
-  barFill: { height: 6, borderRadius: 6, overflow: "hidden" },
-  skipHint: { color: "rgba(255,255,255,0.9)", fontSize: 11, marginTop: 10, fontWeight: "600", letterSpacing: 0.5 },
-  copyright: { color: "rgba(255,255,255,0.75)", fontSize: 10, marginTop: 6, fontWeight: "600" },
+  versionPill: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 18, paddingHorizontal: 12, paddingVertical: 5, borderRadius: 999, backgroundColor: "rgba(255,255,255,0.14)" },
+  versionDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: "#22D3EE" },
+  versionText: { color: "#fff", fontSize: 10, fontWeight: "800", letterSpacing: 1 },
+
+  barTrack: { width: 220, height: 4, backgroundColor: "rgba(255,255,255,0.15)", borderRadius: 4, overflow: "hidden", marginTop: 14 },
+  barFill: { height: 4, borderRadius: 4, overflow: "hidden" },
+  loadingText: { color: "rgba(255,255,255,0.9)", fontSize: 11, fontWeight: "800", letterSpacing: 4, marginTop: 8 },
+
+  skipHint: { color: "rgba(255,255,255,0.75)", fontSize: 11, marginTop: 14, fontWeight: "600" },
+  copyright: { color: "rgba(255,255,255,0.6)", fontSize: 9.5, marginTop: 6, fontWeight: "600" },
 });
