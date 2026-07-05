@@ -38,16 +38,18 @@ export default function Splash() {
   const go = () => {
     if (navigated || loading) return;
     setNavigated(true);
-    if (user) router.replace("/(tabs)/dashboard");
-    else router.replace("/login");
+    router.replace("/(tabs)/dashboard");
   };
 
   useEffect(() => {
     if (loading) return;
-    const t = setTimeout(go, SPLASH_DURATION);
+    const t = setTimeout(() => {
+      // Offline app — always go straight to dashboard. No sign-in required.
+      router.replace("/(tabs)/dashboard");
+    }, SPLASH_DURATION);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading, user]);
+  }, [loading]);
 
   const barW = progress.interpolate({ inputRange: [0, 1], outputRange: ["0%", "100%"] });
   const logoY = float.interpolate({ inputRange: [0, 1], outputRange: [0, -6] });

@@ -36,12 +36,8 @@ export default function Settings() {
             </View>
             <View style={{ flex: 1 }}>
               <Text style={[styles.name, { color: theme.text }]}>{user.name}</Text>
-              <Text style={[styles.role, { color: theme.textMuted }]}>{user.category}  •  {user.hospital || "—"}</Text>
-              <Text style={[styles.role, { color: theme.textMuted }]}>{user.mobile}</Text>
+              <Text style={[styles.role, { color: theme.textMuted }]}>{user.category}  •  Offline Mode</Text>
             </View>
-            <Pressable testID="edit-profile-button" onPress={() => router.push("/register")}>
-              <Ionicons name="create-outline" size={22} color={theme.navy} />
-            </Pressable>
           </View>
         )}
 
@@ -71,12 +67,12 @@ export default function Settings() {
         <Row icon="information-circle" label="About" onPress={() => router.push("/about")} testID="about-row" />
 
         <Pressable
-          testID="logout-button"
-          onPress={async () => { await logout(); router.replace("/login"); }}
+          testID="reset-local-button"
+          onPress={async () => { await logout(); router.replace("/"); }}
           style={({ pressed }) => [styles.logout, { borderColor: theme.border, opacity: pressed ? 0.85 : 1 }]}
         >
-          <Ionicons name="log-out" size={18} color="#EF4444" />
-          <Text style={styles.logoutText}>Logout</Text>
+          <Ionicons name="refresh" size={18} color="#EF4444" />
+          <Text style={styles.logoutText}>Reset Local Data</Text>
         </Pressable>
 
         <Text style={[styles.footer, { color: theme.textMuted }]}>Doggy Breeding App  •  v1.0.0</Text>
