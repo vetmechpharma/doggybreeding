@@ -129,10 +129,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return merged;
   }, [user, persist]);
 
+  const bootstrapAnon = useCallback(async () => {
+    const anon: UserProfile = {
+      id: uuid(),
+      name: "Veterinarian",
+      mobile: "",
+      email: "",
+      hospital: "",
+      category: "Doctor",
+      location: "",
+      state: "",
+      google_id: "",
+      photo_url: "",
+      registration_date: new Date().toISOString(),
+    };
+    await storage.setItem(USER_KEY, JSON.stringify(anon));
+    setUser(anon);
+    return anon;
+  }, []);
+
   const logout = useCallback(async () => {
     await storage.removeItem(USER_KEY);
-    setUser(null);
-  }, []);
+    await bootstrapAnon();
+  }, [bootstrapAnon]);
 
   return (
     <Ctx.Provider value={{ user, loading, register, loginGoogleStub, updateProfile, logout }}>
