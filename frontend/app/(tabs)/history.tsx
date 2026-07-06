@@ -5,7 +5,8 @@ import { useRouter, useFocusEffect } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "@/src/theme/ThemeContext";
 import { useAuth } from "@/src/auth/AuthContext";
-import { api } from "@/src/api/client";
+import { api } from "@/src/api/client"; void api;
+import { localDB } from "@/src/lib/offline";
 import { stageColors, StageKey } from "@/src/theme";
 
 interface EvalRow {
@@ -31,15 +32,13 @@ export default function History() {
   const load = useCallback(async () => {
     if (!user) return;
     try {
-      const [evList, dogList] = await Promise.all([
-        api.get<EvalRow[]>(`/evaluations`, { user_id: user.id, q: q || undefined }),
-        api.get<DogLite[]>(`/dogs`, { user_id: user.id }),
-      ]);
-      setEvals(evList);
+      const evList = await localDB.listEvals(user.id, q || undefined);
+      const dogList = await localDB.listDogs(user.id);
+      setEvals(evList as any);
       const m: Record<string, DogLite> = {};
-      dogList.forEach((d) => (m[d.id] = d));
+      dogList.forEach((d) => (m[d.id] = d as any));
       setDogs(m);
-    } catch (e) { /* ignore */ }
+    } catch { /* ignore */ }
   }, [user, q]);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));

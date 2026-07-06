@@ -8,7 +8,7 @@ import { useAuth } from "@/src/auth/AuthContext";
 import { useToast } from "@/src/components/Toast";
 import { ScreenHeader } from "@/src/components/ScreenHeader";
 import { DatePickerField } from "@/src/components/DatePickerField";
-import { api } from "@/src/api/client";
+import { localDB } from "@/src/lib/offline";
 
 export default function NewEvaluation() {
   const { theme } = useTheme();
@@ -21,7 +21,6 @@ export default function NewEvaluation() {
   const [breed, setBreed] = useState("");
   const [age, setAge] = useState("");
   const [whelping, setWhelping] = useState("");
-  const [prevWhelping, setPrevWhelping] = useState("");
   const [proestrusDate, setProestrusDate] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -33,19 +32,12 @@ export default function NewEvaluation() {
     }
     setBusy(true);
     try {
-      const dog = await api.post<{ id: string }>("/dogs", {
+      const dog = await localDB.createDog({
         user_id: user.id,
-        dog_name: dogName.trim(),
-        owner_name: ownerName.trim(),
-        owner_mobile: ownerMobile.trim(),
-        breed: breed.trim(),
-        age: age.trim(),
-        sex: "Female",
-        weight: "",
+        dog_name: dogName.trim(), owner_name: ownerName.trim(), owner_mobile: ownerMobile.trim(),
+        breed: breed.trim(), age: age.trim(), sex: "Female",
         whelping_count: Number(whelping) || 0,
-        previous_whelping_date: prevWhelping || null,
         proestrus_bleeding_date: proestrusDate || null,
-        photo_base64: "",
       });
       router.push({ pathname: "/evaluation/type", params: { dog_id: dog.id, proestrus_date: proestrusDate } });
     } catch (e: any) {
@@ -70,16 +62,6 @@ export default function NewEvaluation() {
           </View>
 
           <Field label="No. of Whelpings" testID="whelping-count-input" value={whelping} onChangeText={setWhelping} keyboardType="number-pad" placeholder="0" theme={theme} />
-
-          <DatePickerField
-            testID="prev-whelping-date"
-            label="Previous Whelping Date"
-            value={prevWhelping}
-            onChange={setPrevWhelping}
-            placeholder="Tap to pick a date (optional)"
-            theme={theme}
-            maxToday
-          />
 
           <DatePickerField
             testID="proestrus-bleeding-date"

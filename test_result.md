@@ -101,3 +101,65 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: |
+  Doggy Breeding App — professional offline-first Expo React Native app for canine
+  reproductive evaluation. Data must be stored locally (AsyncStorage) so the standalone
+  APK works without any backend. Data optionally syncs to Google Sheets via webhook.
+  Fully offline, no authentication required.
+
+frontend:
+  - task: "Offline evaluation flow (Dashboard → New Eval → Cytology/Progesterone → Result → History)"
+    implemented: true
+    working: "NA"
+    file: "app/(tabs)/dashboard.tsx, app/evaluation/*.tsx, app/(tabs)/history.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: false
+          agent: "main"
+          comment: "Migrated entire flow from FastAPI backend to local AsyncStorage via src/lib/offline.ts. Removed whelping-date field from evaluation form. Fixed duplicate 'user' declaration in result.tsx that was crashing bundler."
+  - task: "PDF generation & WhatsApp share on Result screen"
+    implemented: true
+    working: "NA"
+    file: "app/evaluation/result.tsx"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Uses expo-print for HTML→PDF, expo-sharing/Linking for WhatsApp deep link. Needs verification."
+
+metadata:
+  created_by: "main_agent"
+  version: "1.1"
+  test_sequence: 12
+  run_ui: true
+
+test_plan:
+  current_focus:
+    - "Offline evaluation flow (Dashboard → New Eval → Cytology/Progesterone → Result → History)"
+    - "PDF generation & WhatsApp share on Result screen"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+    - agent: "main"
+      message: |
+        Please run FRONTEND-ONLY end-to-end tests on the offline flow:
+        1) Tap the splash → land on Dashboard.
+        2) Tap "New Evaluation" → fill Dog Name, Owner Name, Owner Mobile (required),
+           optional Breed/Age/Whelpings/Proestrus date → Continue.
+        3) Choose Cytology method → enter PC/IC/SIC/SC/CC summing to 100 → Calculate.
+        4) Verify Result screen shows Stage banner, Recommendation, Heat Cycle Timeline,
+           Cell Counts, Cornification Index. Test PDF button (should generate & offer share)
+           and WhatsApp button (best-effort — may fall back to native share on web).
+        5) Repeat from Dashboard for a NEW dog → choose Progesterone → enter a value like 5.0
+           → Calculate → verify Result.
+        6) Open History tab → verify both evaluations are listed with correct stage chips,
+           search works, tapping a row re-opens the Result screen.
+        7) Kill/reopen the app (page reload) and verify evaluations persist (AsyncStorage).
+        Do NOT test the FastAPI backend — it is deprecated/unused.

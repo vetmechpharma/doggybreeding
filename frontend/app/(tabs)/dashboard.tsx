@@ -5,7 +5,8 @@ import { useRouter, useFocusEffect } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "@/src/theme/ThemeContext";
 import { useAuth } from "@/src/auth/AuthContext";
-import { api } from "@/src/api/client";
+import { api } from "@/src/api/client"; void api;
+import { localDB } from "@/src/lib/offline";
 import { DonutChart } from "@/src/components/DonutChart";
 import { stageColors } from "@/src/theme";
 
@@ -31,9 +32,9 @@ export default function Dashboard() {
   const load = useCallback(async () => {
     if (!user) return;
     try {
-      const s = await api.get<Stats>(`/stats/${user.id}`);
-      setStats(s);
-    } catch (e) { /* ignore */ }
+      const s = await localDB.stats(user.id);
+      setStats(s as any);
+    } catch { /* ignore */ }
   }, [user]);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));

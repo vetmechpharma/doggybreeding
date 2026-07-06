@@ -11,7 +11,9 @@ import { useToast } from "@/src/components/Toast";
 import { ScreenHeader } from "@/src/components/ScreenHeader";
 import { HeatTimeline } from "@/src/components/HeatTimeline";
 import { stageColors, StageKey } from "@/src/theme";
-import { api } from "@/src/api/client";
+import { api } from "@/src/api/client"; void api;
+import { localDB } from "@/src/lib/offline";
+import { useAuth } from "@/src/auth/AuthContext";
 
 interface FullEval {
   evaluation: any;
@@ -26,15 +28,18 @@ export default function Result() {
   const params = useLocalSearchParams<{ eval_id?: string }>();
   const [data, setData] = useState<FullEval | null>(null);
 
+  const { user } = useAuth();
   const load = useCallback(async () => {
     if (!params.eval_id) return;
     try {
-      const d = await api.get<FullEval>(`/evaluations/${params.eval_id}`);
-      setData(d);
+      const evaluation = await localDB.getEval(params.eval_id);
+      if (!evaluation) throw new Error("Evaluation not found");
+      const dog = await localDB.getDog(evaluation.dog_id);
+      setData({ evaluation, dog, user });
     } catch (e: any) {
       toast.show(e.message || "Failed to load evaluation", "error");
     }
-  }, [params.eval_id, toast]);
+  }, [params.eval_id, toast, user]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -48,7 +53,7 @@ export default function Result() {
 
   const ev = data.evaluation;
   const dog = data.dog;
-  const user = data.user;
+  const evalUser = data.user || user;
   const result = ev.result || {};
   const stageKey = (result.stage_key as StageKey) || "ANESTRUS";
   const color = stageColors[stageKey] || theme.navy;
@@ -185,7 +190,7 @@ export default function Result() {
 
   const onDelete = async () => {
     try {
-      await api.del(`/evaluations/${ev.id}`);
+      await localDB.deleteEval(ev.id);
       toast.show("Evaluation deleted", "success");
       router.replace("/(tabs)/history");
     } catch (e: any) {
