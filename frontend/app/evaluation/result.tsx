@@ -206,20 +206,74 @@ export default function Result() {
     const senderPrefix = user?.category === "Doctor" || user?.category === "Student" ? "Dr. " : "";
     const senderLine = user?.name ? `— ${senderPrefix}${user.name}${user.hospital ? `, ${user.hospital}` : ""}${user.mobile ? `\n📞 ${user.mobile}` : ""}` : "";
     const text = `🐕 *Doggy Breeding App Report*\n\nDog: ${dog?.dog_name}\nOwner: ${dog?.owner_name}\nStage: ${result.stage} (${result.confidence}% confidence)\n\n${result.recommendation}\n\nSuggested Mating: ${result.suggested_mating_date || "—"}\nExpected Whelping: ${result.expected_whelping_date || "—"}\n\n${senderLine}`;
+    const phone = dog?.owner_mobile?.replace(/[^0-9]/g, "") || "";
     try {
-      const phone = dog?.owner_mobile?.replace(/[^0-9]/g, "") || "";
+      if (Platform.OS === "web") {
+        const webUrl = phone
+          ? `https://wa.me/${phone}?text=${encodeURIComponent(text)}`
+          : `https://wa.me/?text=${encodeURIComponent(text)}`;
+        try {
+          window.open(webUrl, "_blank");
+          return;
+        } catch {
+          const nav: any = typeof navigator !== "undefined" ? navigator : null;
+          if (nav?.clipboard?.writeText) {
+            await nav.clipboard.writeText(text);
+            toast.show("Report copied — paste it into WhatsApp", "success");
+            return;
+          }
+          toast.show("WhatsApp not available on this browser", "error");
+          return;
+        }
+      }
       const url = phone ? `whatsapp://send?phone=${phone}&text=${encodeURIComponent(text)}` : `whatsapp://send?text=${encodeURIComponent(text)}`;
       const supported = await Linking.canOpenURL(url);
-      if (supported) await Linking.openURL(url);
-      else await Share.share({ message: text });
-    } catch {
-      await Share.share({ message: text });
+      if (supported) {
+        await Linking.openURL(url);
+      } else {
+        await Share.share({ message: text });
+      }
+    } catch (e: any) {
+      try {
+        await Share.share({ message: text });
+      } catch {
+        toast.show(e?.message || "Failed to open WhatsApp", "error");
+      }
     }
   };
 
   const onShare = async () => {
     const text = `${dog?.dog_name} (${dog?.breed}) — ${result.stage}. ${result.recommendation}`;
-    await Share.share({ message: text });
+    try {
+      if (Platform.OS === "web") {
+        // Web Share API isn't universally supported on desktop browsers.
+        const nav: any = typeof navigator !== "undefined" ? navigator : null;
+        if (nav?.share) {
+          try {
+            await nav.share({ title: "Doggy Breeding Report", text });
+            return;
+          } catch (err: any) {
+            // User cancelled — bail silently.
+            if (err?.name === "AbortError") return;
+          }
+        }
+        // Fallback: copy to clipboard
+        try {
+          if (nav?.clipboard?.writeText) {
+            await nav.clipboard.writeText(text);
+            toast.show("Copied to clipboard", "success");
+            return;
+          }
+        } catch {
+          /* fallthrough */
+        }
+        toast.show("Sharing not supported in this browser", "error");
+        return;
+      }
+      await Share.share({ message: text });
+    } catch (e: any) {
+      toast.show(e?.message || "Failed to share", "error");
+    }
   };
 
   const onDelete = async () => {

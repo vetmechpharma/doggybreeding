@@ -1,0 +1,30 @@
+{
+  "summary": "Frontend-only focused re-test of Result-screen action buttons (390x844) after iter 14 fixes to onShare + onShareWhatsApp in /app/frontend/app/evaluation/result.tsx. Full flow executed: cleared localStorage → onboarding (Test Doc / 9998887777 / Doctor / Test Hospital / Namakkal) → dashboard → New Evaluation (Rex / John / 9999999999 / Labrador / 3 years) → Choose Method → Vaginal Exfoliative Cytology → PC=5, IC=10, SIC=10, SC=35, CC=40 → Calculate → landed on /evaluation/result?eval_id=... showing Late Proestrus (85% confidence), Cornification Index = 75% (formula-correct, as noted in iter 14). All THREE action buttons PASS with ZERO page errors and ZERO red overlays. 1) PDF (result-pdf-button): tapped → Print.printAsync succeeded on web, WINDOW_PRINT_CALLED intercepted (browser native print dialog invoked). No 'Cannot destructure' banner. 2) WhatsApp (result-whatsapp-button): tapped → window.open intercepted with correct URL 'https://wa.me/9999999999?text=...' containing full Doggy Breeding App Report, dog/owner/stage/recommendation and Dr. Test Doc signature + mobile. No red banner. 3) Share (result-share-button): with navigator.share deleted (desktop-like), fallback correctly wrote the summary 'Rex (Labrador) — Late Proestrus. Schedule next cytology in 1-2 days. Prepare for mating.' to clipboard and displayed toast 'Copied to clipboard'. No 'Share is not supported in this browser' red overlay (iter-14 bug FIXED). 4) History regression: history-row-<eval_id> still lists Rex • Labrador / Late Proestrus / 7/7/2026 / CYTOLOGY; tapping it reopens the Result screen (result-pdf-button visible). Pre-existing web-only warnings still present (non-blocking): 'Invalid DOM property transform-origin. Did you mean transformOrigin' and 'props.pointerEvents is deprecated. Use style.pointerEvents' — carried over from iter 11-14.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [],
+    "react_native_issues": [
+      {"component": "transform-origin CSS prop", "issue": "Console error 'Invalid DOM property transform-origin. Did you mean transformOrigin?' — web-only cosmetic, carried over from iter 11-14. Rename to transformOrigin in the offending styled component."},
+      {"component": "pointerEvents prop", "issue": "Web-only deprecation warning: 'props.pointerEvents is deprecated. Use style.pointerEvents'. Carried over from prior iterations."}
+    ]
+  },
+  "test_report_links": ["/app/test_reports/iteration_15.json"],
+  "action_items": [
+    "OPTIONAL/COSMETIC (carry-over from iter 11-14): rename `transform-origin` → `transformOrigin` and `pointerEvents` prop → `style.pointerEvents` in the styled component still using them. Non-blocking for native APK.",
+    "No functional action items — the Share + WhatsApp web fallbacks are verified working end-to-end."
+  ],
+  "critical_code_review_comments": [
+    "onShare (result.tsx:245-277) now correctly branches on Platform.OS === 'web': checks navigator.share, silently swallows AbortError, and falls back to navigator.clipboard.writeText + toast 'Copied to clipboard'; final fallback toast 'Sharing not supported in this browser'. All Share.share and clipboard calls are wrapped in try/catch. Verified PASS.",
+    "onShareWhatsApp (result.tsx:205-243) now correctly branches on Platform.OS === 'web': builds `https://wa.me/{phone}?text=<encoded>` and calls window.open in a new tab, with clipboard-copy fallback and toast on failure. Correct URL was intercepted and verified. Verified PASS.",
+    "onPDF (result.tsx:161-203) unchanged from iter 14; still PASS — Print.printAsync triggers window.print() on web, no {uri} destructure on web path."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A (frontend-only per request)", "frontend": "100% — PDF/WhatsApp/Share all PASS; History regression PASS; 0 pageerrors"},
+  "seed_data_creation": "localStorage populated with: profile (Test Doc / 9998887777 / Doctor / Test Hospital / Namakkal) + one Dog (Rex, Labrador, owner John / 9999999999) + one cytology evaluation (Late Proestrus, CI=75%, eval_id 2874f5f3-d963-4ba6-85e7-8a8e21aea235 in this run). Safe to clear.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Iter-14 Share crash and iter-13/14 WhatsApp web branch are BOTH VERIFIED FIXED. Result screen action row is fully stable on web. Only remaining non-blocking web warnings are the transform-origin and pointerEvents deprecations (cosmetic). No further re-test needed unless main agent modifies result.tsx again.",
+  "rca_of_issue": "N/A — this iteration verified the previously applied fixes. Iter-14 RCA still holds: react-native-web's Share.share() throws synchronously when Web Share API is unavailable; the iter-15 fix wraps it and adds navigator.share/clipboard fallback for web. Iter-15 verification confirms the fallback path executes cleanly (clipboard write + 'Copied to clipboard' toast) with no unhandled promise rejection."
+}
