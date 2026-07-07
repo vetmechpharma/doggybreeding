@@ -160,14 +160,45 @@ export default function Result() {
 
   const onPDF = async () => {
     try {
-      const { uri } = await Print.printToFileAsync({ html: generateHTML() });
+      const html = generateHTML();
       if (Platform.OS === "web") {
-        toast.show("PDF generated", "success");
-      } else if (await Sharing.isAvailableAsync()) {
+        // expo-print on web returns { html } (no uri) — use printAsync to invoke
+        // the browser's native print dialog which lets the user save as PDF.
+        // Fallback: open a new tab with the HTML for print/save.
+        try {
+          await Print.printAsync({ html });
+          return;
+        } catch {
+          try {
+            const w = window.open("", "_blank");
+            if (w) {
+              w.document.write(html);
+              w.document.close();
+              // Give the tab a moment to load, then trigger print
+              setTimeout(() => { try { w.focus(); w.print(); } catch { /* noop */ } }, 400);
+              return;
+            }
+          } catch {
+            /* fallthrough */
+          }
+          toast.show("Enable pop-ups to view/print the PDF", "error");
+          return;
+        }
+      }
+      // Native (iOS / Android)
+      const printed = await Print.printToFileAsync({ html });
+      const uri = printed?.uri;
+      if (!uri) {
+        toast.show("Failed to generate PDF file", "error");
+        return;
+      }
+      if (await Sharing.isAvailableAsync()) {
         await Sharing.shareAsync(uri, { dialogTitle: "Share Report", mimeType: "application/pdf" });
+      } else {
+        toast.show(`PDF saved: ${uri}`, "success");
       }
     } catch (e: any) {
-      toast.show(e.message || "Failed to generate PDF", "error");
+      toast.show(e?.message || "Failed to generate PDF", "error");
     }
   };
 
