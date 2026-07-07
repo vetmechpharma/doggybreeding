@@ -14,6 +14,14 @@ import { classifyCytology, localDB } from "@/src/lib/offline";
 
 const CELL_COLORS = { pc: "#3B82F6", ic: "#A855F7", sic: "#F97316", sc: "#22C55E", cc: "#EF4444" };
 
+const CELL_IMAGES: Record<keyof typeof CELL_COLORS, string> = {
+  pc: "https://customer-assets.emergentagent.com/job_canine-cycle/artifacts/0s4im4u4_PC.webp",
+  ic: "https://customer-assets.emergentagent.com/job_canine-cycle/artifacts/3x80s4ru_IC.webp",
+  sic: "https://customer-assets.emergentagent.com/job_canine-cycle/artifacts/q0m69qma_SIC%20%282%29.webp",
+  sc: "https://customer-assets.emergentagent.com/job_canine-cycle/artifacts/2mjp3e8h_SC%20%282%29.webp",
+  cc: "https://customer-assets.emergentagent.com/job_canine-cycle/artifacts/5ovty7ut_CC%20%282%29.webp",
+};
+
 interface CellInfo {
   key: keyof typeof CELL_COLORS;
   label: string;
@@ -29,7 +37,7 @@ const CELLS: CellInfo[] = [
     label: "PC",
     full: "Parabasal Cells",
     hint: "Round to oval, large nucleus",
-    image: "https://images.pexels.com/photos/8533045/pexels-photo-8533045.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    image: CELL_IMAGES.pc,
     details: [
       "Smallest of the vaginal epithelial cells.",
       "Round to oval, large central nucleus.",
@@ -42,7 +50,7 @@ const CELLS: CellInfo[] = [
     label: "IC",
     full: "Intermediate Cells",
     hint: "Low nucleus-to-cytoplasm ratio",
-    image: "https://images.pexels.com/photos/13949979/pexels-photo-13949979.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    image: CELL_IMAGES.ic,
     details: [
       "Larger than parabasal cells.",
       "Polygonal shape, more cytoplasm.",
@@ -55,7 +63,7 @@ const CELLS: CellInfo[] = [
     label: "SIC",
     full: "Small Intermediate Cells",
     hint: "Polygonal, abundant cytoplasm",
-    image: "https://images.pexels.com/photos/8533045/pexels-photo-8533045.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    image: CELL_IMAGES.sic,
     details: [
       "Transitional cells between IC and SC.",
       "Abundant cytoplasm with compact nucleus.",
@@ -67,7 +75,7 @@ const CELLS: CellInfo[] = [
     label: "SC",
     full: "Superficial Cells",
     hint: "Flat, angular, small pyknotic nucleus",
-    image: "https://images.pexels.com/photos/8533045/pexels-photo-8533045.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    image: CELL_IMAGES.sc,
     details: [
       "Largest cell type — angular borders.",
       "Small dark pyknotic nucleus.",
@@ -80,7 +88,7 @@ const CELLS: CellInfo[] = [
     label: "CC",
     full: "Cornified Cells",
     hint: "Fully keratinized, no visible nucleus",
-    image: "https://images.pexels.com/photos/13949979/pexels-photo-13949979.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    image: CELL_IMAGES.cc,
     details: [
       "Fully keratinized, anuclear cells.",
       "Sharp edges, shrivelled appearance.",

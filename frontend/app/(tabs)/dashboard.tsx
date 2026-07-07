@@ -51,6 +51,8 @@ export default function Dashboard() {
     return "Good evening";
   };
 
+  const namePrefix = user.category === "Doctor" || user.category === "Student" ? "Dr. " : "";
+
   const donutData = stats && stats.total > 0 ? [
     { value: stats.estrus, color: stageColors.ESTRUS },
     { value: stats.anestrus, color: stageColors.ANESTRUS },
@@ -68,7 +70,7 @@ export default function Dashboard() {
         <View style={styles.headerRow}>
           <View style={{ flex: 1 }}>
             <Text style={[styles.greet, { color: theme.textMuted }]}>{greet()},</Text>
-            <Text style={[styles.name, { color: theme.text }]} numberOfLines={1}>Dr. {user.name}</Text>
+            <Text style={[styles.name, { color: theme.text }]} numberOfLines={1}>{namePrefix}{user.name}</Text>
             <Text style={[styles.cat, { color: theme.textMuted }]}>{user.category}{user.hospital ? `  •  ${user.hospital}` : ""}</Text>
           </View>
           <Image source={{ uri: LOGO_URL }} style={styles.logo} />

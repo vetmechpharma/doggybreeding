@@ -35,21 +35,23 @@ export default function Splash() {
     ).start();
   }, [progress, fade, float]);
 
+  const isProfileComplete = !!(user?.name && user?.mobile);
+
   const go = () => {
     if (navigated || loading) return;
     setNavigated(true);
-    router.replace("/(tabs)/dashboard");
+    router.replace(isProfileComplete ? "/(tabs)/dashboard" : "/onboarding");
   };
 
   useEffect(() => {
     if (loading) return;
     const t = setTimeout(() => {
-      // Offline app — always go straight to dashboard. No sign-in required.
-      router.replace("/(tabs)/dashboard");
+      // Offline app — go to dashboard if profile is set, otherwise onboard.
+      router.replace(isProfileComplete ? "/(tabs)/dashboard" : "/onboarding");
     }, SPLASH_DURATION);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading]);
+  }, [loading, isProfileComplete]);
 
   const barW = progress.interpolate({ inputRange: [0, 1], outputRange: ["0%", "100%"] });
   const logoY = float.interpolate({ inputRange: [0, 1], outputRange: [0, -6] });

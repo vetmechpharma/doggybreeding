@@ -6,7 +6,15 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "@/src/theme/ThemeContext";
 import { stageColors, stageLabels, stageOrder } from "@/src/theme";
 
-const MICROSCOPE_IMG = "https://images.pexels.com/photos/8533045/pexels-photo-8533045.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940";
+const MICROSCOPE_IMG = "https://customer-assets.emergentagent.com/job_canine-cycle/artifacts/2mjp3e8h_SC%20%282%29.webp";
+
+const CELL_IMG: Record<string, string> = {
+  pc: "https://customer-assets.emergentagent.com/job_canine-cycle/artifacts/0s4im4u4_PC.webp",
+  ic: "https://customer-assets.emergentagent.com/job_canine-cycle/artifacts/3x80s4ru_IC.webp",
+  sic: "https://customer-assets.emergentagent.com/job_canine-cycle/artifacts/q0m69qma_SIC%20%282%29.webp",
+  sc: "https://customer-assets.emergentagent.com/job_canine-cycle/artifacts/2mjp3e8h_SC%20%282%29.webp",
+  cc: "https://customer-assets.emergentagent.com/job_canine-cycle/artifacts/5ovty7ut_CC%20%282%29.webp",
+};
 
 const CELL_TYPES = [
   { key: "pc", title: "Parabasal Cells (PC)", color: "#3B82F6", desc: "Round to oval cells with large nucleus-to-cytoplasm ratio." },
@@ -61,9 +69,12 @@ export default function Learning() {
                 onPress={() => router.push({ pathname: "/learning/[cellType]", params: { cellType: c.key } })}
                 style={({ pressed }) => [styles.cellRow, { backgroundColor: theme.inputBg, opacity: pressed ? 0.85 : 1 }]}
               >
-                <View style={[styles.cellDot, { backgroundColor: c.color }]} />
+                <Image source={{ uri: CELL_IMG[c.key] }} style={[styles.cellThumb, { borderColor: c.color }]} />
                 <View style={{ flex: 1 }}>
-                  <Text style={[styles.cellTitle, { color: theme.text }]}>{c.title}</Text>
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                    <View style={[styles.cellDot, { backgroundColor: c.color }]} />
+                    <Text style={[styles.cellTitle, { color: theme.text }]} numberOfLines={1}>{c.title}</Text>
+                  </View>
                   <Text style={[styles.cellDesc, { color: theme.textMuted }]} numberOfLines={2}>{c.desc}</Text>
                 </View>
                 <Ionicons name="chevron-forward" size={18} color={theme.textMuted} />
@@ -118,7 +129,8 @@ const styles = StyleSheet.create({
   stageDot: { width: 10, height: 10, borderRadius: 5 },
   stageName: { fontSize: 13, fontWeight: "700" },
   cellRow: { flexDirection: "row", alignItems: "center", gap: 12, padding: 12, borderRadius: 12 },
-  cellDot: { width: 12, height: 50, borderRadius: 6 },
+  cellDot: { width: 10, height: 10, borderRadius: 5 },
+  cellThumb: { width: 60, height: 60, borderRadius: 10, borderWidth: 2, backgroundColor: "#fff" },
   cellTitle: { fontSize: 14, fontWeight: "800" },
   cellDesc: { fontSize: 12, marginTop: 2 },
 });

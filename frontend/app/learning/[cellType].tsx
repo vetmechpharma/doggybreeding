@@ -9,7 +9,7 @@ const DATA: Record<string, { title: string; color: string; image: string; desc: 
   pc: {
     title: "Parabasal Cells (PC)",
     color: "#3B82F6",
-    image: "https://images.pexels.com/photos/8533045/pexels-photo-8533045.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    image: "https://customer-assets.emergentagent.com/job_canine-cycle/artifacts/0s4im4u4_PC.webp",
     desc: "Round to oval shaped cells with large nucleus-to-cytoplasm ratio.",
     details: [
       "Smallest of the vaginal epithelial cells.",
@@ -21,7 +21,7 @@ const DATA: Record<string, { title: string; color: string; image: string; desc: 
   ic: {
     title: "Intermediate Cells (IC)",
     color: "#A855F7",
-    image: "https://images.pexels.com/photos/13949979/pexels-photo-13949979.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    image: "https://customer-assets.emergentagent.com/job_canine-cycle/artifacts/3x80s4ru_IC.webp",
     desc: "Low nucleus-to-cytoplasm ratio.",
     details: [
       "Larger than parabasal cells.",
@@ -33,7 +33,7 @@ const DATA: Record<string, { title: string; color: string; image: string; desc: 
   sic: {
     title: "Small Intermediate Cells (SIC)",
     color: "#F97316",
-    image: "https://images.pexels.com/photos/8533045/pexels-photo-8533045.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    image: "https://customer-assets.emergentagent.com/job_canine-cycle/artifacts/q0m69qma_SIC%20%282%29.webp",
     desc: "Large polygonal shape with abundant cytoplasm with small nucleus.",
     details: [
       "Transitional cells between intermediate and superficial.",
@@ -44,7 +44,7 @@ const DATA: Record<string, { title: string; color: string; image: string; desc: 
   sc: {
     title: "Superficial Cells (SC)",
     color: "#22C55E",
-    image: "https://images.pexels.com/photos/8533045/pexels-photo-8533045.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    image: "https://customer-assets.emergentagent.com/job_canine-cycle/artifacts/2mjp3e8h_SC%20%282%29.webp",
     desc: "Large flat angular cells with irregular border having small pyknotic nucleus.",
     details: [
       "Largest of the cell types — angular borders.",
@@ -56,7 +56,7 @@ const DATA: Record<string, { title: string; color: string; image: string; desc: 
   cc: {
     title: "Cornified Cells (CC)",
     color: "#EF4444",
-    image: "https://images.pexels.com/photos/13949979/pexels-photo-13949979.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    image: "https://customer-assets.emergentagent.com/job_canine-cycle/artifacts/5ovty7ut_CC%20%282%29.webp",
     desc: "Fully keratinized cells with no visible nucleus.",
     details: [
       "Fully keratinized, anuclear cells.",

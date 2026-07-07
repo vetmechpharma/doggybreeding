@@ -158,6 +158,53 @@ agent_communication:
            Cell Counts, Cornification Index. Test PDF button (should generate & offer share)
            and WhatsApp button (best-effort — may fall back to native share on web).
         5) Repeat from Dashboard for a NEW dog → choose Progesterone → enter a value like 5.0
+
+frontend:
+  - task: "First-time onboarding profile capture (Doctor / Clinic / Institution name + Mobile)"
+    implemented: true
+    working: "NA"
+    file: "app/onboarding.tsx, app/index.tsx, app/(tabs)/settings.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "New /onboarding route. Splash routes to /onboarding when profile is incomplete (name/mobile missing). Category chips (Doctor/Clinic/Institution/Student), Name label adapts. Register saves to AsyncStorage via useAuth().register."
+  - task: "Feedback → WhatsApp deep link to +919488709436"
+    implemented: true
+    working: "NA"
+    file: "app/feedback.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Submit button opens whatsapp://send?phone=919488709436&text=... — falls back to wa.me web link on web preview, then to native share sheet. No backend / no Sheets webhook."
+  - task: "Settings: removed Sync to Cloud & Backup rows; added Edit Profile"
+    implemented: true
+    working: "NA"
+    file: "app/(tabs)/settings.tsx"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Data section removed. Edit Profile row navigates to /onboarding for editing."
+  - task: "Learning + Cytology cell images replaced with real demo microscopy images"
+    implemented: true
+    working: "NA"
+    file: "app/(tabs)/learning.tsx, app/learning/[cellType].tsx, app/evaluation/cytology.tsx"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Replaced Pexels placeholders with user-provided PC/IC/SIC/SC/CC .webp images hosted at customer-assets.emergentagent.com. Learning list now shows a color-bordered thumbnail per cell."
+
            → Calculate → verify Result.
         6) Open History tab → verify both evaluations are listed with correct stage chips,
            search works, tapping a row re-opens the Result screen.

@@ -58,11 +58,8 @@ export default function Settings() {
           />
         </View>
 
-        <Text style={[styles.section, { color: theme.textMuted }]}>Data</Text>
-        <Row icon="cloud-upload" label="Sync to Cloud" value="Auto-sync when online" testID="sync-row" />
-        <Row icon="download" label="Backup" value="Export evaluations" testID="backup-row" />
-
         <Text style={[styles.section, { color: theme.textMuted }]}>App</Text>
+        <Row icon="person-circle" label="Edit Profile" value="Name, mobile, clinic details" onPress={() => router.push("/onboarding")} testID="edit-profile-row" />
         <Row icon="star" label="Feedback" onPress={() => router.push("/feedback")} testID="feedback-row" />
         <Row icon="information-circle" label="About" onPress={() => router.push("/about")} testID="about-row" />
 

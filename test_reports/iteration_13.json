@@ -1,0 +1,32 @@
+{
+  "summary": "Frontend-only regression on 390x844 for the 4 new features + regression flows. ALL 4 P0/P1/P2 scenarios PASS. (1) ONBOARDING: cleared localStorage/sessionStorage, reloaded → splash-screen visible → tapping splash routes to /onboarding (profile empty). 'Welcome!' title present. All 4 category chips render with correct testIDs (onboarding-cat-doctor/clinic/institution/student). Label swap verified: Clinic → 'Clinic Name *', Institution → 'Institution / College Name *', Student → 'Your Full Name *', Doctor → 'Doctor Name *'. Empty submit is BLOCKED (didn't navigate). Filling Doctor/Ravi Kumar/9876543210/Sunrise Vet Clinic/Chennai → onboarding-continue-button → landed on /dashboard. Dashboard greeting reads 'Good morning, Dr. Ravi Kumar' and 'Doctor • Sunrise Vet Clinic' shown. Full page reload → splash → dashboard directly (no re-onboarding); profile persisted in localStorage. (2) SETTINGS: 'Sync to Cloud' row = GONE. 'Backup / Export evaluations' row = GONE. 'Data' section header = GONE. New 'edit-profile-row' (testID) present under App section → tapping routes to /onboarding with all 4 fields pre-filled (Ravi Kumar / 9876543210 / Sunrise Vet Clinic / Chennai), button label reads 'Save Changes' (isEditing branch), and onboarding-cancel-button visible. (3) FEEDBACK: header subtitle 'Share your feedback via WhatsApp' present, green WhatsApp hint banner with logo-whatsapp icon rendered, star-1..star-5 selectors present, feedback-comments-input present, 'Share via WhatsApp' green button (testID feedback-submit-button) tappable without crash, toast 'Opening WhatsApp…' appeared, footer 'Delivered to +91 94887 09436' present. (Web browser blocked whatsapp:// scheme silently as expected; no unhandled exception.) (4) LEARNING + CYTOLOGY IMAGES: All 5 learning-cell-<key> rows render with square microscopy thumbnails from customer-assets.emergentagent.com/job_canine-cycle/artifacts/ — PC=0s4im4u4_PC.webp, IC=3x80s4ru_IC.webp, SIC=q0m69qma_SIC.webp, SC=2mjp3e8h_SC.webp, CC=5ovty7ut_CC.webp. Cytology CC info modal (cytology-cc-info) opens and shows the 5ovty7ut_CC.webp microscopy image — NOT a pexels stock photo. REGRESSION: Cytology eval PC=5/IC=10/SIC=10/SC=35/CC=40 → Calculate → routed to /evaluation/result?eval_id=... (Late Proestrus). History tab shows the persisted entry with 'LATE PROESTRUS' chip after page reload/navigation. Backend /api/* NOT called (offline flow).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [],
+    "react_native_issues": [
+      {"component": "transform-origin CSS prop", "issue": "Pre-existing console error 'Invalid DOM property transform-origin. Did you mean transformOrigin?' — carried over from iteration 11/12. Web-only cosmetic; will not appear on native APK. Rename `transform-origin` → `transformOrigin` in the offending StyleSheet."},
+      {"component": "pointerEvents prop", "issue": "Pre-existing web-only deprecation warning: 'props.pointerEvents is deprecated. Use style.pointerEvents'. Rename `pointerEvents` prop to `style.pointerEvents` in any component (likely a Pressable/View somewhere in shared UI)."}
+    ]
+  },
+  "test_report_links": ["/app/test_reports/iteration_13.json"],
+  "action_items": [
+    "OPTIONAL/COSMETIC: fix pre-existing web-only warnings — `transform-origin` → `transformOrigin` and `pointerEvents` prop → `style.pointerEvents`. Non-blocking. All 4 review-request features are production-ready."
+  ],
+  "critical_code_review_comments": [
+    "onboarding.tsx isEditing detection uses `user?.name && user?.mobile && user.name !== 'Veterinarian'` — correct guard against the empty-default profile state; Edit Profile flow from Settings pre-fills correctly.",
+    "index.tsx splash: both the 6s timer and the onPress handler correctly route to /onboarding vs /(tabs)/dashboard based on `isProfileComplete = !!(user?.name && user?.mobile)`. First-launch UX is safe.",
+    "settings.tsx: Data section fully removed; only Appearance and App sections remain; edit-profile-row correctly navigates to /onboarding and reuses the existing register() flow (no separate edit endpoint needed).",
+    "feedback.tsx: 3-level fallback (whatsapp:// → wa.me → Share.share) with try/catch on each layer — will never crash on web where whatsapp:// canOpenURL returns false silently.",
+    "learning.tsx and learning/[cellType].tsx: cell image URLs match cytology.tsx CELL_IMAGES map exactly — consistent microscopy imagery across Learning module and Cytology info modal.",
+    "cytology.tsx info modal correctly binds `info.image` to the modal <Image> and uses the same canine-cycle URLs — verified visually: CC modal shows 5ovty7ut_CC.webp."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A (frontend-only per request)", "frontend": "100% (4/4 new scenarios PASS + regression PASS)"},
+  "seed_data_creation": "Left in localStorage: profile (Ravi Kumar / 9876543210 / Sunrise Vet Clinic / Chennai / Doctor) and one TEST cytology evaluation (Late Proestrus, CI=75%). Safe to clear before next iteration.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "All 4 iteration-13 features (first-time onboarding routing, settings cleanup + Edit Profile, feedback→WhatsApp deep-link, canine-cycle microscopy images across Learning + Cytology) are verified working. Splash routes correctly based on profile completeness. Only remaining console noise is the pre-existing transform-origin + pointerEvents web-only warnings — no new issues introduced by this iteration.",
+  "rca_of_issue": "N/A — no regressions found. All 4 review-request features work as specified."
+}

@@ -3,7 +3,7 @@
 
 const URL = process.env.EXPO_PUBLIC_SHEETS_WEBHOOK || "";
 
-async function send(type: "user" | "evaluation", payload: Record<string, unknown>): Promise<void> {
+async function send(type: "user" | "evaluation" | "feedback", payload: Record<string, unknown>): Promise<void> {
   if (!URL) return; // not configured yet — silently skip
   try {
     await fetch(URL, {
@@ -19,5 +19,6 @@ async function send(type: "user" | "evaluation", payload: Record<string, unknown
 export const sheetsSync = {
   user: (payload: Record<string, unknown>) => send("user", payload),
   evaluation: (payload: Record<string, unknown>) => send("evaluation", payload),
+  feedback: (payload: Record<string, unknown>) => send("feedback", payload),
   enabled: () => Boolean(URL),
 };
