@@ -31,7 +31,7 @@ const DATA: Record<string, { title: string; color: string; image: string; desc: 
     ],
   },
   sic: {
-    title: "Small Intermediate Cells (SIC)",
+    title: "Superficial Intermediate Cells (SIC)",
     color: "#F97316",
     image: "https://customer-assets.emergentagent.com/job_canine-cycle/artifacts/q0m69qma_SIC%20%282%29.webp",
     desc: "Large polygonal shape with abundant cytoplasm with small nucleus.",

@@ -77,11 +77,18 @@ export function classifyCytology(i: CytologyInput, proestrusDateIso?: string | n
 }
 
 // ─── Progesterone ───
+// Classification (all values in ng/ml):
+//   ≤ 0.5           → Anestrus
+//   0.6  – 1.0      → Early Proestrus
+//   1.1  – 2.0      → Late Proestrus
+//   2.1  – 4.0      → Estrus
+//   4.1  – 18.0     → Estrus / Ovulation
+//   ≥ 18.1          → Diestrus
 export function classifyProgesterone(v: number, proestrusDateIso?: string | null): StageResult {
   let key: StageKey, conf: number, interp: string, rec: string, ovul: string | null;
-  if (v < 0.5) { key = "ANESTRUS"; conf = 90; interp = "Baseline progesterone — anestrus."; rec = "No breeding. Recheck when proestrus begins."; ovul = null; }
+  if (v <= 0.5) { key = "ANESTRUS"; conf = 90; interp = "Baseline progesterone — anestrus."; rec = "No breeding. Recheck when proestrus begins."; ovul = null; }
   else if (v <= 1.0) { key = "EARLY_PROESTRUS"; conf = 80; interp = "Progesterone beginning to rise. Early proestrus."; rec = "Recheck progesterone in 2-3 days."; ovul = "Ovulation in ~4-6 days"; }
-  else if (v <= 1.9) { key = "LATE_PROESTRUS"; conf = 85; interp = "LH surge approaching. Late proestrus."; rec = "Recheck in 24-48 hours. Mating window is imminent."; ovul = "Ovulation in ~2-4 days"; }
+  else if (v <= 2.0) { key = "LATE_PROESTRUS"; conf = 85; interp = "LH surge approaching. Late proestrus."; rec = "Recheck in 24-48 hours. Mating window is imminent."; ovul = "Ovulation in ~2-4 days"; }
   else if (v <= 4.0) { key = "ESTRUS"; conf = 92; interp = "LH surge has occurred. Estrus."; rec = "Optimal natural mating window opens in 2-3 days."; ovul = "Ovulation within ~24-48 hours"; }
   else if (v <= 18.0) { key = "ESTRUS_OVULATION"; conf = 95; interp = "Post-ovulation, oocytes maturing. Peak fertility window."; rec = "Breed now or within 24-48 hours. Ideal time for AI."; ovul = "Ovulation occurred — oocyte maturation in progress"; }
   else { key = "DIESTRUS"; conf = 88; interp = "High progesterone — diestrus / luteal phase."; rec = "If bred, monitor pregnancy. Otherwise cycle is past optimal window."; ovul = "Past ovulation"; }

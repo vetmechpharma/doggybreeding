@@ -61,7 +61,7 @@ const CELLS: CellInfo[] = [
   {
     key: "sic",
     label: "SIC",
-    full: "Small Intermediate Cells",
+    full: "Superficial Intermediate Cells",
     hint: "Polygonal, abundant cytoplasm",
     image: CELL_IMAGES.sic,
     details: [

@@ -12,13 +12,13 @@ import { api } from "@/src/api/client"; void api;
 import { sheetsSync } from "@/src/api/sheetsSync";
 import { classifyProgesterone, localDB } from "@/src/lib/offline";
 
-const RANGES = [
-  { range: "< 0.5", label: "Anestrus", color: stageColors.ANESTRUS, min: -1, max: 0.5 },
-  { range: "0.5 – 1.0", label: "Early Proestrus", color: stageColors.EARLY_PROESTRUS, min: 0.5, max: 1.0 },
-  { range: "1.1 – 1.9", label: "Late Proestrus", color: stageColors.LATE_PROESTRUS, min: 1.1, max: 1.9 },
-  { range: "2.0 – 4.0", label: "Estrus", color: stageColors.ESTRUS, min: 2.0, max: 4.0 },
-  { range: "4.1 – 18", label: "Estrus / Ovulation", color: stageColors.ESTRUS_OVULATION, min: 4.1, max: 18 },
-  { range: "> 18", label: "Diestrus", color: stageColors.DIESTRUS, min: 18.01, max: 999 },
+const RANGES: { range: string; label: string; color: string; key: string }[] = [
+  { range: "≤ 0.5 ng/ml",     label: "Anestrus",           color: stageColors.ANESTRUS,          key: "ANESTRUS" },
+  { range: "0.6 – 1.0 ng/ml", label: "Early Proestrus",    color: stageColors.EARLY_PROESTRUS,   key: "EARLY_PROESTRUS" },
+  { range: "1.1 – 2.0 ng/ml", label: "Late Proestrus",     color: stageColors.LATE_PROESTRUS,    key: "LATE_PROESTRUS" },
+  { range: "2.1 – 4.0 ng/ml", label: "Estrus",             color: stageColors.ESTRUS,            key: "ESTRUS" },
+  { range: "4.1 – 18.0 ng/ml",label: "Estrus / Ovulation", color: stageColors.ESTRUS_OVULATION,  key: "ESTRUS_OVULATION" },
+  { range: "≥ 18.1 ng/ml",    label: "Diestrus",           color: stageColors.DIESTRUS,          key: "DIESTRUS" },
 ];
 
 export default function ProgesteroneCalc() {
@@ -32,8 +32,9 @@ export default function ProgesteroneCalc() {
 
   const v = Number(value);
   const matched = useMemo(() => {
-    if (!value || isNaN(v)) return null;
-    return RANGES.find((r) => v > r.min && v <= r.max) || null;
+    if (!value || isNaN(v) || v < 0) return null;
+    const r = classifyProgesterone(v, null);
+    return RANGES.find((x) => x.key === r.stage_key) || null;
   }, [v, value]);
 
   const submit = async () => {

@@ -19,7 +19,7 @@ const CELL_IMG: Record<string, string> = {
 const CELL_TYPES = [
   { key: "pc", title: "Parabasal Cells (PC)", color: "#3B82F6", desc: "Round to oval cells with large nucleus-to-cytoplasm ratio." },
   { key: "ic", title: "Intermediate Cells (IC)", color: "#A855F7", desc: "Low nucleus-to-cytoplasm ratio." },
-  { key: "sic", title: "Small Intermediate (SIC)", color: "#F97316", desc: "Large polygonal cells with abundant cytoplasm, small nucleus." },
+  { key: "sic", title: "Superficial Intermediate (SIC)", color: "#F97316", desc: "Large polygonal cells with abundant cytoplasm, small nucleus." },
   { key: "sc", title: "Superficial Cells (SC)", color: "#22C55E", desc: "Large flat angular cells with small pyknotic nucleus." },
   { key: "cc", title: "Cornified Cells (CC)", color: "#EF4444", desc: "Fully keratinized cells with no visible nucleus." },
 ];

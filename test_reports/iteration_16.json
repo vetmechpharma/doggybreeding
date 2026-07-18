@@ -1,0 +1,30 @@
+{
+  "summary": "Frontend-only regression PASS for two feature changes: (A) 'Small Intermediate' → 'Superficial Intermediate' rename and (B) Progesterone units + boundary-fix ranges. Mobile viewport 375x667. Full flow executed each time: clear IndexedDB+localStorage → splash → onboarding (Test Doc / 9998887777 / Doctor / Test Hospital / Namakkal) → dashboard → New Evaluation → Rex / John / 9999999999 / Labrador / 3 → Choose Method. Zero pageerrors. Zero red-screen. RESULTS: [A1 Learning tab] 'Superficial Intermediate (SIC)' present, 'Small Intermediate' absent — PASS. [A2 Learning detail /learning/sic] header reads 'Superficial Intermediate Cells (SIC)' — PASS. [A3 Cytology info modal cytology-sic-info] heading 'Superficial Intermediate Cells' shown, no 'Small' — PASS. [A4 Result screen Cell Counts after cytology submit] label 'Superficial Intermediate (SIC)' present, no 'Small' — PASS. [A5 PDF] source code review confirms result.tsx generateHTML line 71 outputs 'Superficial Intermediate Cells (SIC)'; runtime PDF triggered via Print.printAsync opened the browser's native print dialog (cannot introspect iframe content post-print on web) — PASS by code review. [C Reference table on progesterone.tsx] all 6 rows shown verbatim: '≤ 0.5 ng/ml', '0.6 – 1.0 ng/ml', '1.1 – 2.0 ng/ml', '2.1 – 4.0 ng/ml', '4.1 – 18.0 ng/ml', '≥ 18.1 ng/ml' — PASS. [B Progesterone live-preview chip] verified by locating a DOM node whose textContent === expected stage AND getComputedStyle.textTransform === 'uppercase' (the chip's unique style). All 5 previously-broken boundary values map correctly: 0.6→Early Proestrus, 1.1→Late Proestrus, 2.1→Estrus, 4.1→Estrus / Ovulation, 18.1→Diestrus — PASS. Non-boundary values 0.3, 0.5, 1.0, 2.0, 4.0, 18.0, 25.0 were sanity-checked via DOM node count and match expectations. [B Full submits] 0.6 → Result screen shows 'Early Proestrus' (80% confidence, purple banner) — PASS. 4.1 → Result screen shows 'Estrus / Ovulation' (95% confidence, green banner, 'Breed now or within 24-48 hours') — PASS.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [],
+    "react_native_issues": [
+      {"component": "transform-origin CSS prop", "issue": "Carried over from iter 11-15: web-only console warning 'Invalid DOM property transform-origin. Did you mean transformOrigin?'. Non-blocking. Not related to this iteration's changes."},
+      {"component": "pointerEvents prop", "issue": "Carried over: 'props.pointerEvents is deprecated. Use style.pointerEvents'. Non-blocking web-only warning."}
+    ]
+  },
+  "test_report_links": ["/app/test_reports/iteration_16.json"],
+  "action_items": [
+    "No functional action items. Both change sets are verified live on web preview.",
+    "OPTIONAL/COSMETIC carry-over: rename transform-origin → transformOrigin and pointerEvents prop → style.pointerEvents in whichever component still emits those web warnings."
+  ],
+  "critical_code_review_comments": [
+    "classifyProgesterone in /app/frontend/src/lib/offline.ts (lines 87-94) now uses inclusive upper bounds (v<=0.5, v<=1.0, v<=2.0, v<=4.0, v<=18.0, else DIESTRUS) which correctly maps every boundary in the spec including 0.6, 1.1, 2.1, 4.1, 18.1 that were previously mis-classified.",
+    "RANGES array in /app/frontend/app/evaluation/progesterone.tsx (lines 15-22) has 6 rows, each with the 'ng/ml' suffix, and each keyed to the matching StageKey. Both the live preview chip (via useMemo on classifyProgesterone) and the ref list read from the same source, so they cannot drift.",
+    "SIC label rename is consistent across 5 code paths: (a) cytology.tsx CELLS[2].full = 'Superficial Intermediate Cells'; (b) result.tsx CellLine label 'Superficial Intermediate (SIC)' at line 343; (c) result.tsx PDF row 'Superficial Intermediate Cells (SIC)' at line 71; (d) (tabs)/learning.tsx CELL_TYPES 'Superficial Intermediate (SIC)' at line 22; (e) learning/[cellType].tsx sic.title 'Superficial Intermediate Cells (SIC)' at line 34. No remaining 'Small Intermediate' occurrences anywhere in the frontend."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A (frontend-only per request)", "frontend": "100% — A1/A2/A3/A4 SIC rename PASS, A5 PDF PASS by code review, C reference table PASS, B live-preview chip + boundary submits PASS"},
+  "seed_data_creation": "Ephemeral: cleared and re-seeded IndexedDB + localStorage in every run. Test profile 'Test Doc' + 1 Dog 'Rex' + 2 progesterone evaluations (0.6 → Early Proestrus, 4.1 → Estrus / Ovulation) + 1 cytology evaluation. Safe to clear.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Both changes in this review are verified. Test flow that works on this app: (1) clear IndexedDB('AsyncStorage')+localStorage; (2) tap [data-testid=splash-screen]; (3) fill onboarding (cat-doctor, name-input, mobile-input, hospital-input, location-input, continue-button); (4) tap text 'New Evaluation' on dashboard; (5) fill dog-name/owner-name/owner-mobile inputs then new-eval-continue-button; (6) tap [data-testid=method-cytology] or method-progesterone. Progesterone chip is uniquely identifiable by getComputedStyle.textTransform === 'uppercase'.",
+  "rca_of_issue": "N/A — this iteration verified feature additions, not a bug. Prior bug (boundary values 0.6, 1.1, 2.1, 4.1, 18.1 skipped) fixed by switching classifyProgesterone from strict `<` bounds to inclusive `<=` bounds; every consecutive interval now shares its endpoint with the next, guaranteeing full coverage of the real number line."
+}

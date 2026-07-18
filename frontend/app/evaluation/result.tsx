@@ -66,14 +66,14 @@ export default function Result() {
     let inputRows = "";
     if (ev.type === "cytology") {
       inputRows = `
-        <tr><td>PC</td><td>${inputs.pc ?? 0}</td></tr>
-        <tr><td>IC</td><td>${inputs.ic ?? 0}</td></tr>
-        <tr><td>SIC</td><td>${inputs.sic ?? 0}</td></tr>
-        <tr><td>SC</td><td>${inputs.sc ?? 0}</td></tr>
-        <tr><td>CC</td><td>${inputs.cc ?? 0}</td></tr>
+        <tr><td>Parabasal Cells (PC)</td><td>${inputs.pc ?? 0}</td></tr>
+        <tr><td>Intermediate Cells (IC)</td><td>${inputs.ic ?? 0}</td></tr>
+        <tr><td>Superficial Intermediate Cells (SIC)</td><td>${inputs.sic ?? 0}</td></tr>
+        <tr><td>Superficial Cells (SC)</td><td>${inputs.sc ?? 0}</td></tr>
+        <tr><td>Cornified Cells (CC)</td><td>${inputs.cc ?? 0}</td></tr>
         <tr><td><b>Cornification Index</b></td><td><b>${result.cornification_index}%</b></td></tr>`;
     } else if (ev.type === "progesterone") {
-      inputRows = `<tr><td>Progesterone</td><td>${inputs.value} ng/ml</td></tr>`;
+      inputRows = `<tr><td>Serum Progesterone</td><td>${inputs.value} ng/ml</td></tr>`;
     }
     return `<!doctype html><html><head><meta charset="utf-8"/>
       <style>
@@ -340,7 +340,7 @@ export default function Result() {
             <View style={{ gap: 6 }}>
               <CellLine theme={theme} label="Parabasal (PC)" value={ev.inputs.pc} color="#3B82F6" />
               <CellLine theme={theme} label="Intermediate (IC)" value={ev.inputs.ic} color="#A855F7" />
-              <CellLine theme={theme} label="Small Intermediate (SIC)" value={ev.inputs.sic} color="#F97316" />
+              <CellLine theme={theme} label="Superficial Intermediate (SIC)" value={ev.inputs.sic} color="#F97316" />
               <CellLine theme={theme} label="Superficial (SC)" value={ev.inputs.sc} color="#22C55E" />
               <CellLine theme={theme} label="Cornified (CC)" value={ev.inputs.cc} color="#EF4444" />
               <View style={[styles.ciHighlight, { backgroundColor: stageColor + "22" }]}>
