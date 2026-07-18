@@ -68,12 +68,12 @@ export default function ProgesteroneCalc() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.bg }} edges={["bottom"]}>
-      <ScreenHeader title="Progesterone Calculator" subtitle="Enter serum value in ng/ml" />
+      <ScreenHeader title="Progesterone Calculator" subtitle="Enter Serum P₄ Value in ng/ml" />
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
           {/* Big input */}
           <View style={[styles.inputCard, { backgroundColor: theme.card, borderColor: matched?.color || theme.border }]}>
-            <Text style={[styles.label, { color: theme.textMuted }]}>Progesterone</Text>
+            <Text style={[styles.label, { color: theme.navy }]}>Enter Serum P₄ Value in ng/ml</Text>
             <View style={{ flexDirection: "row", alignItems: "baseline", justifyContent: "center", gap: 8 }}>
               <TextInput
                 testID="progesterone-value-input"
@@ -127,7 +127,7 @@ export default function ProgesteroneCalc() {
 const styles = StyleSheet.create({
   scroll: { padding: 16, gap: 14, paddingBottom: 32 },
   inputCard: { padding: 24, borderRadius: 22, borderWidth: 2, alignItems: "center" },
-  label: { fontSize: 11, fontWeight: "800", letterSpacing: 1, textTransform: "uppercase" },
+  label: { fontSize: 13, fontWeight: "900", letterSpacing: 0.5, textTransform: "uppercase", textAlign: "center", marginBottom: 4 },
   bigInput: { fontSize: 56, fontWeight: "800", letterSpacing: -2, minWidth: 120, textAlign: "center" },
   unit: { fontSize: 14, fontWeight: "700" },
   preview: { flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999, marginTop: 8 },
