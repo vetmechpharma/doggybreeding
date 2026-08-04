@@ -1,0 +1,60 @@
+{
+  "summary": "Verified PDF report redesign in /app/frontend/app/evaluation/result.tsx (generateHTML). All 12 required textual substrings present in generated HTML for ALL THREE evaluation types (cytology-100, cytology-flex, progesterone). @page A4 rule present. Result screen mobile UI (regression) unchanged — stage banner, Recommendation card, Heat Cycle Timeline, Cell Counts, Patient card, Breeding Schedule all render. However — IMPORTANT WEB-ONLY UX ISSUE — on web, expo-print's Print.printAsync ignores the passed HTML and just calls window.print() on the current page; the branded-HTML fallback path only runs if printAsync throws (which it doesn't). So on real web browsers, tapping PDF prints the raw Result screen, not the branded report. Fix suggestion below.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [
+      {
+        "flow": "Result → PDF button (web platform only)",
+        "issue": "Print.printAsync on web (expo-print ExponentPrint.web.js) merely calls window.print() and IGNORES the html option. This prints the current React page instead of the branded HTML template. The fallback new-tab code in onPDF() only executes if printAsync throws, but it silently succeeds. Users on web will not see the new branded PDF report at all.",
+        "affected_testIDs": ["result-pdf-button"]
+      }
+    ],
+    "design_issues": [],
+    "react_native_issues": []
+  },
+  "pdf_substring_verification": {
+    "needles_checked": [
+      "Doggy Breeding Guide", "BREED • TRACK • CARE",
+      "Veterinary College and Research Institute, Namakkal",
+      "Department of Veterinary Gynaecology",
+      "Interpretation", "Recommendation", "Suggestions",
+      "Breeding Schedule", "Signature", "ANIMitra Software",
+      "support@animitra.in", "DBG-"
+    ],
+    "cytology_100": {"all_present": true, "a4_rule": true, "html_len": 8943},
+    "cytology_flex": {"all_present": true, "a4_rule": true, "html_len": 9220, "cells_units_present": true},
+    "progesterone": {"all_present": true, "a4_rule": true, "html_len": 8620, "ng_ml_present": true}
+  },
+  "result_ui_regression": {
+    "stage_banner": "PASS",
+    "recommendation_card": "PASS",
+    "heat_cycle_timeline": "PASS",
+    "cell_counts": "PASS",
+    "patient_card": "PASS",
+    "breeding_schedule": "PASS"
+  },
+  "test_report_links": [
+    "/tmp/cyt100_pdf.html",
+    "/tmp/cytflex_pdf.html",
+    "/tmp/prog_pdf.html",
+    "/tmp/result_screen.png"
+  ],
+  "action_items": [
+    "WEB-ONLY BUG: In /app/frontend/app/evaluation/result.tsx onPDF(), for Platform.OS==='web' do NOT call Print.printAsync (it ignores html on web). Instead directly open a new tab and document.write(html) — the existing fallback code does exactly this. Move that block ahead of the printAsync call on web, e.g.: `if (Platform.OS === 'web') { const w = window.open('', '_blank'); if (w) { w.document.write(html); w.document.close(); setTimeout(() => { try { w.focus(); w.print(); } catch{} }, 400); return; } toast.show('Enable pop-ups to view/print the PDF', 'error'); return; }`. Confirmed via source inspection of expo-print/build/ExponentPrint.web.js which is: `async print() { window.print(); }` — no options usage.",
+    "Optional: consider using a Blob URL + iframe or html2pdf.js on web for a true native browser print preview of the report."
+  ],
+  "critical_code_review_comments": [
+    "generateHTML() is well-structured; all required literals hardcoded and correctly interpolated (reportId prefix now 'DBG-' as intended, previously 'DBA-').",
+    "Stage-specific SUGGESTIONS map covers all 7 keys (ANESTRUS, EARLY_PROESTRUS, MID_PROESTRUS, LATE_PROESTRUS, ESTRUS, ESTRUS_OVULATION, DIESTRUS) with fallback to ANESTRUS.",
+    "Flex-mode measurements table correctly shows '<n> cells' + percentage; progesterone shows single ng/ml row. Both verified in captured HTML.",
+    "Minor pre-existing DOM warning: 'Invalid DOM property transform-origin' from a react-native-web style, unrelated to this change."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A (frontend-only)", "frontend": "PDF template content 100%, PDF web trigger has 1 medium-priority bug"},
+  "seed_data_creation": "Test dogs: Bella, Bella-flex, Bella-prog (offline localDB, will not affect prod).",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "PDF template redesign verified end-to-end for all 3 evaluation types by monkey-patching window.print to force the code's built-in fallback (window.open + document.write). All 12 required substrings + A4 CSS rule present. Regression Result UI unchanged. The one non-passing item is a web-platform integration bug: Print.printAsync on web ignores the html option (ExponentPrint.web.js only calls window.print()), so the pretty branded report is never actually shown to real web users unless the main agent restructures onPDF() to use window.open path first on web. Fix is a 5-line change in result.tsx.",
+  "rca_of_issue": "Root cause of web-only PDF bug: expo-print's web implementation (node_modules/expo-print/build/ExponentPrint.web.js) is a stub — its print()/printToFileAsync() both call window.print() and DISCARD the html argument. Since it never throws, the try/catch fallback in onPDF() that writes html to a new tab is unreachable on web. Reproduction: open http://localhost:3000 → onboard → New Evaluation → Cytology → fill 0/10/20/40/30 → Calculate → tap PDF. In a real browser you'll see the print dialog for the Result screen (not the branded report). Mitigation: check Platform.OS==='web' first and go straight to the window.open + document.write path (identical to what onPDF already has in its catch). Cytology-100 substring test intentionally forced the fallback via window.print monkey-patch and confirmed the branded HTML is correct — so only the trigger, not the template, needs fixing."
+}

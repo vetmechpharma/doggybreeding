@@ -61,8 +61,50 @@ export default function Result() {
   const generateHTML = () => {
     const logo = "https://customer-assets.emergentagent.com/job_453e719f-8513-486c-b1fd-4be9ca8fb67d/artifacts/j7h9vi8t_logo.jpg";
     const today = new Date().toLocaleDateString();
-    const reportId = `DBA-${ev.id.slice(0, 8).toUpperCase()}`;
+    const reportId = `DBG-${ev.id.slice(0, 8).toUpperCase()}`;
     const inputs = ev.inputs || {};
+
+    // Stage-specific suggestions/care tips (rendered as bullets).
+    const SUGGESTIONS: Record<string, string[]> = {
+      ANESTRUS: [
+        "Maintain balanced nutrition and regular exercise.",
+        "Track prior heat dates; expect next proestrus in 4–7 months.",
+        "Recheck cytology when vulvar bleeding starts.",
+      ],
+      EARLY_PROESTRUS: [
+        "Keep female indoors — bleeding will continue 5–10 days.",
+        "Do NOT introduce the stud yet; female is not receptive.",
+        "Repeat cytology in 3–4 days.",
+      ],
+      MID_PROESTRUS: [
+        "Cornification is progressing — repeat cytology in 2–3 days.",
+        "Prepare the stud and mating environment.",
+        "Consider a progesterone assay to pinpoint the LH surge.",
+      ],
+      LATE_PROESTRUS: [
+        "Repeat cytology in 24–48 hours — estrus is imminent.",
+        "Introduce the stud briefly for teasing; expect receptivity within 1–2 days.",
+        "Progesterone assay recommended to confirm LH surge.",
+      ],
+      ESTRUS: [
+        "Optimal breeding window — mate today and repeat in 48 hours.",
+        "For AI, inseminate within 24–48 hours of the LH surge.",
+        "Confirm pregnancy with ultrasound 21–25 days after mating.",
+      ],
+      ESTRUS_OVULATION: [
+        "Peak fertility — inseminate now or within 24–48 hours.",
+        "Repeat mating/AI 48 hours later to maximise conception rate.",
+        "Schedule ultrasound at 25–30 days post-ovulation.",
+      ],
+      DIESTRUS: [
+        "If bred, schedule ultrasound at 25–30 days post-mating.",
+        "Provide gestational nutrition and calm environment.",
+        "If not bred, next cycle expected in ~4–7 months.",
+      ],
+    };
+    const suggestions = SUGGESTIONS[stageKey] || SUGGESTIONS.ANESTRUS;
+    const suggestionsHtml = suggestions.map((s) => `<li>${s}</li>`).join("");
+
     let inputRows = "";
     if (ev.type === "cytology") {
       const flex = inputs._mode === "flex";
@@ -71,7 +113,7 @@ export default function Result() {
           ? `<tr><td>${name}</td><td>${count ?? 0} cells</td><td><b>${(pct ?? 0).toFixed(1)}%</b></td></tr>`
           : `<tr><td>${name}</td><td>${count ?? 0}%</td></tr>`;
       const header = flex
-        ? `<tr><th>Cell Type</th><th>Count</th><th>%</th></tr><tr><td colspan="3" style="text-align:right;font-weight:700"><i>Total counted: ${inputs.total_cells ?? 0} cells</i></td></tr>`
+        ? `<tr><th>Cell Type</th><th>Count</th><th>%</th></tr><tr><td colspan="3" style="text-align:right;font-weight:700;padding:2px 8px;font-size:10px;color:#64748B"><i>Total counted: ${inputs.total_cells ?? 0} cells</i></td></tr>`
         : `<tr><th>Cell Type</th><th>Value</th></tr>`;
       inputRows = header +
         fmtRow("Parabasal Cells (PC)", inputs.pc, inputs.pct_pc) +
@@ -79,89 +121,198 @@ export default function Result() {
         fmtRow("Superficial Intermediate Cells (SIC)", inputs.sic, inputs.pct_sic) +
         fmtRow("Superficial Cells (SC)", inputs.sc, inputs.pct_sc) +
         fmtRow("Cornified Cells (CC)", inputs.cc, inputs.pct_cc) +
-        `<tr><td${flex ? ' colspan="2"' : ''}><b>Cornification Index</b></td><td><b>${result.cornification_index}%</b></td></tr>`;
+        `<tr><td${flex ? ' colspan="2"' : ''} style="background:#F1F5F9"><b>Cornification Index</b></td><td style="background:#F1F5F9"><b>${result.cornification_index}%</b></td></tr>`;
     } else if (ev.type === "progesterone") {
-      inputRows = `<tr><td>Serum Progesterone</td><td>${inputs.value} ng/ml</td></tr>`;
+      inputRows =
+        `<tr><th>Parameter</th><th>Value</th></tr>` +
+        `<tr><td>Serum Progesterone (P₄)</td><td><b>${inputs.value} ng/ml</b></td></tr>`;
     }
+
+    const senderName = `${evalUser?.category === "Doctor" || evalUser?.category === "Student" ? "Dr. " : ""}${evalUser?.name || ""}`;
+
     return `<!doctype html><html><head><meta charset="utf-8"/>
       <style>
-        body{font-family:Arial,sans-serif;color:#0F172A;padding:32px;}
-        .hdr{display:flex;align-items:center;gap:16px;border-bottom:3px solid ${color};padding-bottom:16px;}
-        .logo{width:80px;height:80px;border-radius:12px;}
-        h1{margin:0;font-size:24px;color:#0F172A;}
-        .tag{color:#64748B;font-size:12px;letter-spacing:3px;margin-top:4px;}
-        .meta{margin-top:24px;font-size:13px;color:#334155;line-height:1.6;}
-        .stage{background:${color};color:#fff;padding:18px;border-radius:14px;margin:24px 0;}
-        .stage h2{margin:0;font-size:26px;}
-        .stage p{margin:8px 0 0;opacity:.95;}
-        table{width:100%;border-collapse:collapse;margin-top:16px;}
-        td{padding:8px;border-bottom:1px solid #E2E8F0;font-size:13px;}
-        .section{margin-top:24px;}
-        h3{font-size:14px;color:#0F172A;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;}
-        .footer{margin-top:32px;border-top:1px solid #E2E8F0;padding-top:12px;color:#64748B;font-size:11px;text-align:center;}
-        .badge{display:inline-block;background:#F1F5F9;padding:4px 10px;border-radius:999px;font-size:11px;margin-right:6px;}
-      </style></head><body>
-        <div class="hdr">
-          <img class="logo" src="${logo}"/>
-          <div>
-            <h1>Doggy Breeding App</h1>
-            <div class="tag">BREED • TRACK • CARE</div>
-            <div style="font-size:11px;color:#475569;margin-top:6px;">
-              Veterinary College and Research Institute, Namakkal<br/>
-              Department of Veterinary Gynaecology and Obstetrics
+        @page { size: A4; margin: 12mm; }
+        * { box-sizing: border-box; }
+        html, body { margin:0; padding:0; }
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; color:#0F172A; font-size:11px; line-height:1.4; }
+        .wrap { padding: 0; }
+
+        /* Header */
+        .hdr { display:flex; align-items:center; gap:14px; border-bottom:3px solid ${color}; padding-bottom:10px; }
+        .logo { width:60px; height:60px; border-radius:10px; object-fit:cover; }
+        .brand h1 { margin:0; font-size:20px; color:${color}; letter-spacing:-0.3px; }
+        .brand .tag { color:#64748B; font-size:10px; letter-spacing:2.5px; margin-top:2px; font-weight:700; }
+        .brand .inst { font-size:9.5px; color:#475569; margin-top:4px; line-height:1.35; }
+        .hdr .rid { margin-left:auto; text-align:right; font-size:9.5px; color:#334155; line-height:1.5; }
+        .hdr .rid .idbox { display:inline-block; background:${color}; color:#fff; padding:3px 8px; border-radius:6px; font-weight:800; letter-spacing:0.5px; }
+
+        /* Two-column mid section */
+        .row { display:flex; gap:10px; margin-top:10px; }
+        .col { flex:1; }
+        h3 { margin:0 0 5px; font-size:10px; text-transform:uppercase; letter-spacing:1.2px; color:${color}; border-bottom:1px solid #E2E8F0; padding-bottom:3px; }
+        .kv { font-size:10.5px; color:#334155; line-height:1.55; }
+        .kv b { color:#0F172A; }
+
+        /* Stage banner */
+        .stage { background:${color}; color:#fff; padding:12px 14px; border-radius:10px; margin:10px 0; display:flex; align-items:center; justify-content:space-between; gap:10px; }
+        .stage h2 { margin:0; font-size:18px; letter-spacing:-0.3px; }
+        .stage .conf { background:rgba(255,255,255,0.25); padding:3px 10px; border-radius:999px; font-size:10px; font-weight:700; letter-spacing:0.4px; }
+        .stage .stat { font-size:10px; margin-top:4px; opacity:0.95; }
+
+        /* Sections */
+        .box { border:1px solid #E2E8F0; border-radius:8px; padding:8px 10px; background:#FFFFFF; }
+        .interp p { margin:0; font-size:11px; line-height:1.5; color:#1E293B; }
+
+        /* Tables */
+        table { width:100%; border-collapse:collapse; margin-top:2px; }
+        th { background:#F1F5F9; text-align:left; padding:5px 8px; font-size:9.5px; text-transform:uppercase; letter-spacing:0.8px; color:#475569; border-bottom:1px solid #E2E8F0; }
+        td { padding:5px 8px; border-bottom:1px solid #F1F5F9; font-size:10.5px; }
+
+        /* Recommendation + Suggestions */
+        .rec p { margin:0 0 4px; font-size:11px; line-height:1.5; }
+        ul.tips { margin:2px 0 0 14px; padding:0; }
+        ul.tips li { font-size:10.5px; line-height:1.5; margin:1px 0; color:#334155; }
+
+        /* Schedule chips */
+        .sched { display:flex; gap:6px; margin-top:4px; }
+        .sched .chip { flex:1; text-align:center; border:1px solid ${color}55; border-radius:8px; padding:6px 4px; background:#FFFFFF; }
+        .sched .chip .lbl { font-size:8.5px; color:#64748B; text-transform:uppercase; letter-spacing:0.8px; font-weight:700; }
+        .sched .chip .val { font-size:11.5px; font-weight:800; color:${color}; margin-top:2px; }
+
+        /* Signature + footer */
+        .sig { display:flex; align-items:flex-end; justify-content:space-between; margin-top:12px; padding-top:8px; border-top:1px solid #E2E8F0; }
+        .sig .who { font-size:10.5px; color:#0F172A; }
+        .sig .who b { display:block; font-size:12px; margin-bottom:2px; }
+        .sig .who small { color:#64748B; font-size:9.5px; }
+        .sig .line { width:150px; text-align:center; }
+        .sig .line .l { border-bottom:1px solid #64748B; height:22px; }
+        .sig .line small { color:#64748B; font-size:9px; }
+
+        .footer { margin-top:8px; padding-top:6px; border-top:2px solid ${color}; text-align:center; font-size:9px; color:#64748B; line-height:1.5; }
+        .footer b { color:${color}; }
+        .disclaimer { text-align:center; font-size:8.5px; color:#94A3B8; margin-top:4px; font-style:italic; }
+      </style></head>
+      <body>
+        <div class="wrap">
+
+          <!-- Branded Header -->
+          <div class="hdr">
+            <img class="logo" src="${logo}"/>
+            <div class="brand">
+              <h1>Doggy Breeding Guide</h1>
+              <div class="tag">BREED • TRACK • CARE</div>
+              <div class="inst">
+                Veterinary College and Research Institute, Namakkal<br/>
+                Department of Veterinary Gynaecology &amp; Obstetrics
+              </div>
+            </div>
+            <div class="rid">
+              <div class="idbox">${reportId}</div><br/>
+              <span><b>Date:</b> ${today}</span><br/>
+              <span><b>Method:</b> ${ev.type === "cytology" ? "Vaginal Cytology" : "Progesterone Analysis"}${ev.type === "cytology" && inputs._mode === "flex" ? " (Flex)" : ""}</span>
             </div>
           </div>
-        </div>
 
-        <div class="meta">
-          <div><b>Report ID:</b> ${reportId}</div>
-          <div><b>Date:</b> ${today}</div>
-          <div><b>Method:</b> ${ev.type.toUpperCase()}</div>
-        </div>
-
-        <div class="section">
-          <h3>Patient Information</h3>
-          <div class="meta">
-            <div><b>Dog:</b> ${dog?.dog_name || "—"} (${dog?.breed || "—"})</div>
-            <div><b>Age / Weight:</b> ${dog?.age || "—"} / ${dog?.weight || "—"} kg</div>
-            <div><b>Owner:</b> ${dog?.owner_name || "—"}  •  ${dog?.owner_mobile || "—"}</div>
-            <div><b>Onset of Proestrus Bleeding:</b> ${dog?.proestrus_bleeding_date || "—"}</div>
+          <!-- Patient + Owner in two columns -->
+          <div class="row">
+            <div class="col">
+              <h3>Patient</h3>
+              <div class="kv">
+                <b>${dog?.dog_name || "—"}</b><br/>
+                Breed: ${dog?.breed || "—"}<br/>
+                Age: ${dog?.age || "—"}${dog?.weight ? `  &nbsp;•&nbsp; Weight: ${dog.weight} kg` : ""}<br/>
+                Whelpings: ${dog?.whelping_count ?? "—"}
+              </div>
+            </div>
+            <div class="col">
+              <h3>Owner &amp; Case</h3>
+              <div class="kv">
+                <b>${dog?.owner_name || "—"}</b><br/>
+                📞 ${dog?.owner_mobile || "—"}<br/>
+                Proestrus Onset: ${dog?.proestrus_bleeding_date || "—"}
+              </div>
+            </div>
           </div>
-        </div>
 
-        <div class="stage">
-          <h2>${result.stage}</h2>
-          <p>${result.interpretation || ""}</p>
+          <!-- Stage banner -->
+          <div class="stage">
+            <div>
+              <h2>${result.stage}</h2>
+              <div class="stat">${result.breeding_status || ""}</div>
+            </div>
+            <div class="conf">Confidence ${result.confidence}%</div>
+          </div>
+
+          <!-- Two-column: Measurements | Interpretation -->
+          <div class="row">
+            <div class="col">
+              <h3>Measurements</h3>
+              <table>${inputRows}</table>
+            </div>
+            <div class="col interp">
+              <h3>Interpretation</h3>
+              <div class="box">
+                <p>${result.interpretation || "—"}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recommendation + Suggestions -->
+          <div class="row">
+            <div class="col rec">
+              <h3>Recommendation</h3>
+              <div class="box"><p>${result.recommendation || "—"}</p></div>
+            </div>
+            <div class="col">
+              <h3>Suggestions &amp; Care Tips</h3>
+              <div class="box">
+                <ul class="tips">${suggestionsHtml}</ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Breeding Schedule -->
           <div style="margin-top:10px;">
-            <span class="badge" style="background:rgba(255,255,255,0.25);color:#fff;">Confidence: ${result.confidence}%</span>
-            <span class="badge" style="background:rgba(255,255,255,0.25);color:#fff;">${result.breeding_status || ""}</span>
+            <h3>Breeding Schedule</h3>
+            <div class="sched">
+              <div class="chip">
+                <div class="lbl">Suggested Mating</div>
+                <div class="val">${result.suggested_mating_date || "—"}</div>
+              </div>
+              <div class="chip">
+                <div class="lbl">Next Evaluation</div>
+                <div class="val">${result.next_evaluation_date || result.next_test_date || "—"}</div>
+              </div>
+              <div class="chip">
+                <div class="lbl">Expected Whelping</div>
+                <div class="val">${result.expected_whelping_date || "—"}</div>
+              </div>
+            </div>
           </div>
-        </div>
 
-        <div class="section">
-          <h3>Measurements</h3>
-          <table>${inputRows}</table>
-        </div>
+          <!-- Signature -->
+          <div class="sig">
+            <div class="who">
+              <b>${senderName || "—"}</b>
+              <small>${evalUser?.category || ""}${evalUser?.hospital ? "  •  " + evalUser.hospital : ""}${evalUser?.location ? "  •  " + evalUser.location : ""}</small>
+              ${evalUser?.mobile ? `<br/><small>📞 ${evalUser.mobile}</small>` : ""}
+            </div>
+            <div class="line">
+              <div class="l"></div>
+              <small>Signature &amp; Seal</small>
+            </div>
+          </div>
 
-        <div class="section">
-          <h3>Recommendation</h3>
-          <p style="font-size:13px;line-height:1.6;">${result.recommendation || ""}</p>
-        </div>
+          <!-- Branding footer -->
+          <div class="footer">
+            <b>Doggy Breeding Guide</b> &nbsp;•&nbsp; Breed • Track • Care<br/>
+            Developed by <b>ANIMitra Software</b> &nbsp;•&nbsp; +91 99444 72488 &nbsp;•&nbsp; support@animitra.in
+          </div>
+          <div class="disclaimer">
+            This report is an evidence-based decision aid. Clinical judgement of the attending veterinarian remains final.
+          </div>
 
-        <div class="section">
-          <h3>Breeding Schedule</h3>
-          <table>
-            <tr><td>Suggested Mating Date</td><td>${result.suggested_mating_date || "—"}</td></tr>
-            <tr><td>Next Evaluation</td><td>${result.next_evaluation_date || result.next_test_date || "—"}</td></tr>
-            <tr><td>Expected Whelping</td><td>${result.expected_whelping_date || "—"}</td></tr>
-          </table>
-        </div>
-
-        <div class="footer">
-          <b>${evalUser?.category === "Doctor" || evalUser?.category === "Student" ? "Dr. " : ""}${evalUser?.name || ""}</b>${evalUser?.category ? ` (${evalUser.category})` : ""}<br/>
-          ${evalUser?.hospital || ""}${evalUser?.hospital && evalUser?.location ? "  •  " : ""}${evalUser?.location || ""}<br/>
-          ${evalUser?.mobile ? `📞 ${evalUser.mobile}<br/>` : ""}
-          Generated by Doggy Breeding App  •  ANIMitra Software  •  +91 99444 72488
         </div>
       </body></html>`;
   };
