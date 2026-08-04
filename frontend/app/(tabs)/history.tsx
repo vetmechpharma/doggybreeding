@@ -65,7 +65,11 @@ export default function History() {
               <Text style={[styles.chipText, { color }]}>{item.result?.stage || stageKey}</Text>
             </View>
             <Text style={[styles.date, { color: theme.textMuted }]}>{dt.toLocaleDateString()}</Text>
-            <Text style={[styles.type, { color: theme.textMuted }]}>{item.type.toUpperCase()}</Text>
+            <Text style={[styles.type, { color: theme.textMuted }]}>
+              {item.type === "cytology" && item.inputs?._mode === "flex"
+                ? `CYTOLOGY · ${item.inputs.total_cells ?? "?"} CELLS`
+                : item.type.toUpperCase()}
+            </Text>
           </View>
         </View>
         <Ionicons name="chevron-forward" size={18} color={theme.textMuted} />

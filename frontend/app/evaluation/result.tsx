@@ -65,13 +65,21 @@ export default function Result() {
     const inputs = ev.inputs || {};
     let inputRows = "";
     if (ev.type === "cytology") {
-      inputRows = `
-        <tr><td>Parabasal Cells (PC)</td><td>${inputs.pc ?? 0}</td></tr>
-        <tr><td>Intermediate Cells (IC)</td><td>${inputs.ic ?? 0}</td></tr>
-        <tr><td>Superficial Intermediate Cells (SIC)</td><td>${inputs.sic ?? 0}</td></tr>
-        <tr><td>Superficial Cells (SC)</td><td>${inputs.sc ?? 0}</td></tr>
-        <tr><td>Cornified Cells (CC)</td><td>${inputs.cc ?? 0}</td></tr>
-        <tr><td><b>Cornification Index</b></td><td><b>${result.cornification_index}%</b></td></tr>`;
+      const flex = inputs._mode === "flex";
+      const fmtRow = (name: string, count: any, pct: any) =>
+        flex
+          ? `<tr><td>${name}</td><td>${count ?? 0} cells</td><td><b>${(pct ?? 0).toFixed(1)}%</b></td></tr>`
+          : `<tr><td>${name}</td><td>${count ?? 0}%</td></tr>`;
+      const header = flex
+        ? `<tr><th>Cell Type</th><th>Count</th><th>%</th></tr><tr><td colspan="3" style="text-align:right;font-weight:700"><i>Total counted: ${inputs.total_cells ?? 0} cells</i></td></tr>`
+        : `<tr><th>Cell Type</th><th>Value</th></tr>`;
+      inputRows = header +
+        fmtRow("Parabasal Cells (PC)", inputs.pc, inputs.pct_pc) +
+        fmtRow("Intermediate Cells (IC)", inputs.ic, inputs.pct_ic) +
+        fmtRow("Superficial Intermediate Cells (SIC)", inputs.sic, inputs.pct_sic) +
+        fmtRow("Superficial Cells (SC)", inputs.sc, inputs.pct_sc) +
+        fmtRow("Cornified Cells (CC)", inputs.cc, inputs.pct_cc) +
+        `<tr><td${flex ? ' colspan="2"' : ''}><b>Cornification Index</b></td><td><b>${result.cornification_index}%</b></td></tr>`;
     } else if (ev.type === "progesterone") {
       inputRows = `<tr><td>Serum Progesterone</td><td>${inputs.value} ng/ml</td></tr>`;
     }
@@ -336,13 +344,22 @@ export default function Result() {
         {/* Cytology details */}
         {ev.type === "cytology" && (
           <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
-            <Text style={[styles.cardTitle, { color: theme.text }]}>Cell Counts</Text>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+              <Text style={[styles.cardTitle, { color: theme.text, marginBottom: 0 }]}>Cell Counts</Text>
+              {ev.inputs._mode === "flex" && (
+                <View style={{ backgroundColor: theme.navy + "18", paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999 }}>
+                  <Text style={{ color: theme.navy, fontWeight: "800", fontSize: 11, letterSpacing: 0.5 }}>
+                    TOTAL {ev.inputs.total_cells} CELLS
+                  </Text>
+                </View>
+              )}
+            </View>
             <View style={{ gap: 6 }}>
-              <CellLine theme={theme} label="Parabasal (PC)" value={ev.inputs.pc} color="#3B82F6" />
-              <CellLine theme={theme} label="Intermediate (IC)" value={ev.inputs.ic} color="#A855F7" />
-              <CellLine theme={theme} label="Superficial Intermediate (SIC)" value={ev.inputs.sic} color="#F97316" />
-              <CellLine theme={theme} label="Superficial (SC)" value={ev.inputs.sc} color="#22C55E" />
-              <CellLine theme={theme} label="Cornified (CC)" value={ev.inputs.cc} color="#EF4444" />
+              <CellLine theme={theme} label="Parabasal (PC)" value={ev.inputs.pc} pct={ev.inputs.pct_pc} color="#3B82F6" mode={ev.inputs._mode} />
+              <CellLine theme={theme} label="Intermediate (IC)" value={ev.inputs.ic} pct={ev.inputs.pct_ic} color="#A855F7" mode={ev.inputs._mode} />
+              <CellLine theme={theme} label="Superficial Intermediate (SIC)" value={ev.inputs.sic} pct={ev.inputs.pct_sic} color="#F97316" mode={ev.inputs._mode} />
+              <CellLine theme={theme} label="Superficial (SC)" value={ev.inputs.sc} pct={ev.inputs.pct_sc} color="#22C55E" mode={ev.inputs._mode} />
+              <CellLine theme={theme} label="Cornified (CC)" value={ev.inputs.cc} pct={ev.inputs.pct_cc} color="#EF4444" mode={ev.inputs._mode} />
               <View style={[styles.ciHighlight, { backgroundColor: stageColor + "22" }]}>
                 <Text style={{ color: stageColor, fontWeight: "800", fontSize: 13 }}>Cornification Index (SC+CC)</Text>
                 <Text style={{ color: stageColor, fontWeight: "800", fontSize: 18 }}>{result.cornification_index}%</Text>
@@ -403,14 +420,22 @@ function DateRow({ theme, icon, label, value, color }: any) {
   );
 }
 
-function CellLine({ theme, label, value, color }: any) {
+function CellLine({ theme, label, value, color, pct, mode }: any) {
+  const isFlex = mode === "flex";
   return (
     <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 6 }}>
-      <View style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
+      <View style={{ flexDirection: "row", gap: 8, alignItems: "center", flex: 1 }}>
         <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: color }} />
         <Text style={{ color: theme.text, fontSize: 13 }}>{label}</Text>
       </View>
-      <Text style={{ color: theme.text, fontWeight: "800", fontSize: 14 }}>{value ?? 0}</Text>
+      {isFlex ? (
+        <View style={{ flexDirection: "row", alignItems: "baseline", gap: 6 }}>
+          <Text style={{ color: theme.textMuted, fontSize: 12 }}>{value ?? 0} cells</Text>
+          <Text style={{ color: theme.text, fontWeight: "800", fontSize: 14, minWidth: 52, textAlign: "right" }}>{(pct ?? 0).toFixed(1)}%</Text>
+        </View>
+      ) : (
+        <Text style={{ color: theme.text, fontWeight: "800", fontSize: 14 }}>{value ?? 0}%</Text>
+      )}
     </View>
   );
 }

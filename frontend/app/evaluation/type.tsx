@@ -12,7 +12,7 @@ import { ScreenHeader } from "@/src/components/ScreenHeader";
 const REF_IMG = "https://customer-assets.emergentagent.com/job_453e719f-8513-486c-b1fd-4be9ca8fb67d/artifacts/qmzn6gx5_Picture2.png";
 
 interface MethodCard {
-  key: "cytology" | "progesterone" | "vaginoscope";
+  key: "cytology" | "cytology_flex" | "progesterone" | "vaginoscope";
   title: string;
   subtitle: string;
   color: string;
@@ -23,9 +23,17 @@ interface MethodCard {
 const METHODS: MethodCard[] = [
   {
     key: "cytology",
-    title: "Vaginal Exfoliative Cytology",
-    subtitle: "Microscopic cell count analysis (PC, IC, SIC, SC, CC)",
+    title: "Vaginal Cytology (100 Cells)",
+    subtitle: "Enter percentages of PC, IC, SIC, SC, CC that total 100",
     color: "#7C3AED",
+    panel: 0,
+    available: true,
+  },
+  {
+    key: "cytology_flex",
+    title: "Vaginal Cytology (More Than 100 Cells)",
+    subtitle: "Enter raw cell counts — total & % auto-calculated",
+    color: "#6D28D9",
     panel: 0,
     available: true,
   },
@@ -60,6 +68,8 @@ export default function EvalType() {
     if (!m.available) return;
     if (m.key === "cytology") {
       router.push({ pathname: "/evaluation/cytology", params: { dog_id: params.dog_id || "", proestrus_date: params.proestrus_date || "" } });
+    } else if (m.key === "cytology_flex") {
+      router.push({ pathname: "/evaluation/cytology-flex", params: { dog_id: params.dog_id || "", proestrus_date: params.proestrus_date || "" } });
     } else if (m.key === "progesterone") {
       router.push({ pathname: "/evaluation/progesterone", params: { dog_id: params.dog_id || "", proestrus_date: params.proestrus_date || "" } });
     }
