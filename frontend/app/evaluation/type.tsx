@@ -6,17 +6,22 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "@/src/theme/ThemeContext";
 import { ScreenHeader } from "@/src/components/ScreenHeader";
 
-// User-provided 3-panel reference image. We render each panel by clipping
-// the image inside a fixed-size container — panel 0 = Cytology, 1 = Progesterone,
-// 2 = Vaginoscope.
-const REF_IMG = "https://customer-assets.emergentagent.com/job_453e719f-8513-486c-b1fd-4be9ca8fb67d/artifacts/qmzn6gx5_Picture2.png";
+// Per-method visuals. We use real microscopy images for the two cytology
+// calculators, and Ionicons for the other methods. All render inside a fixed
+// square panel with `resizeMode="cover"` so nothing gets clipped mid-label.
+const CYTOLOGY_IMG = "https://customer-assets.emergentagent.com/job_canine-cycle/artifacts/2mjp3e8h_SC%20%282%29.webp";
+const CYTOLOGY_FLEX_IMG = "https://customer-assets.emergentagent.com/job_canine-cycle/artifacts/5ovty7ut_CC%20%282%29.webp";
+
+type MethodKey = "cytology" | "cytology_flex" | "progesterone" | "vaginoscope";
 
 interface MethodCard {
-  key: "cytology" | "cytology_flex" | "progesterone" | "vaginoscope";
+  key: MethodKey;
   title: string;
   subtitle: string;
   color: string;
-  panel: 0 | 1 | 2;
+  bg: string;                          // pale tint behind the icon/image
+  image?: string;                       // microscopy image URI (if any)
+  icon?: keyof typeof Ionicons.glyphMap; // fallback / other methods
   available: boolean;
 }
 
@@ -26,7 +31,8 @@ const METHODS: MethodCard[] = [
     title: "Vaginal Cytology (100 Cells)",
     subtitle: "Enter percentages of PC, IC, SIC, SC, CC that total 100",
     color: "#7C3AED",
-    panel: 0,
+    bg: "#EDE9FE",
+    image: CYTOLOGY_IMG,
     available: true,
   },
   {
@@ -34,7 +40,8 @@ const METHODS: MethodCard[] = [
     title: "Vaginal Cytology (More Than 100 Cells)",
     subtitle: "Enter raw cell counts — total & % auto-calculated",
     color: "#6D28D9",
-    panel: 0,
+    bg: "#EDE9FE",
+    image: CYTOLOGY_FLEX_IMG,
     available: true,
   },
   {
@@ -42,7 +49,8 @@ const METHODS: MethodCard[] = [
     title: "Progesterone Analysis",
     subtitle: "Serum hormone classification (ng/ml)",
     color: "#0D9488",
-    panel: 1,
+    bg: "#CCFBF1",
+    icon: "flask",
     available: true,
   },
   {
@@ -50,14 +58,13 @@ const METHODS: MethodCard[] = [
     title: "Vaginoscope",
     subtitle: "Future Module — direct vaginal visualization",
     color: "#BE185D",
-    panel: 2,
+    bg: "#FCE7F3",
+    icon: "eye",
     available: false,
   },
 ];
 
-const PANEL_W = 110; // visible width of each panel inside the card
-const PANEL_H = 130;
-const IMG_W = PANEL_W * 3; // image rendered at 3x panel width, then offset to show one panel
+const PANEL = 96; // square visual panel size
 
 export default function EvalType() {
   const { theme } = useTheme();
@@ -94,12 +101,16 @@ export default function EvalType() {
               },
             ]}
           >
-            <View style={[styles.imageFrame, { backgroundColor: "#fff" }]}>
-              <Image
-                source={{ uri: REF_IMG }}
-                style={{ width: IMG_W, height: PANEL_H, marginLeft: -m.panel * PANEL_W }}
-                resizeMode="cover"
-              />
+            <View style={[styles.imageFrame, { backgroundColor: m.bg, borderColor: m.color + "44" }]}>
+              {m.image ? (
+                <Image
+                  source={{ uri: m.image }}
+                  style={{ width: PANEL, height: PANEL, borderRadius: 14 }}
+                  resizeMode="cover"
+                />
+              ) : (
+                <Ionicons name={m.icon || "help-circle"} size={54} color={m.color} />
+              )}
             </View>
 
             <View style={styles.textBlock}>
@@ -142,12 +153,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   imageFrame: {
-    width: PANEL_W,
-    height: PANEL_H,
-    borderRadius: 14,
+    width: PANEL,
+    height: PANEL,
+    borderRadius: 18,
     overflow: "hidden",
-    alignItems: "flex-start",
-    justifyContent: "flex-start",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
   },
   textBlock: { flex: 1, gap: 4 },
   colorBar: { width: 36, height: 4, borderRadius: 2, marginBottom: 4 },
