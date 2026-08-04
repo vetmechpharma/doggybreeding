@@ -1,0 +1,65 @@
+{
+  "summary": "PASS — Iter 20 fix confirmed. `onPDF()` on web now bypasses the expo-print stub and goes directly to `window.open('', '_blank')` + `document.write(html)` + `w.print()`. Live-clicked PDF button end-to-end for all three evaluation types (cytology-100, progesterone, cytology-flex) at http://localhost:3000 (mobile viewport 390x844). In every case a NEW BROWSER TAB opened and its DOM contained the full branded template — all 11 required substrings present, HTML sizes 8641–9241 bytes. Regression: WhatsApp button still opens a new tab (wa.me) without a red overlay, and Share button executes without error. Result screen (stage banner, Recommendation, Heat Timeline, Cell Counts, Patient card, Breeding Schedule) renders correctly.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [],
+    "react_native_issues": []
+  },
+  "pdf_new_tab_verification": {
+    "method": "playwright context.expect_page() captured window.open new tab; read new_page.content() and asserted needles.",
+    "cytology_100": {
+      "new_tab_url": "about:blank",
+      "html_len": 8948,
+      "all_11_substrings_present": true,
+      "substrings_checked": [
+        "Doggy Breeding Guide", "Interpretation", "Suggestions",
+        "ANIMitra Software", "DBG-", "Signature", "BREED",
+        "Recommendation", "Breeding Schedule", "support@animitra.in",
+        "Veterinary College and Research Institute, Namakkal"
+      ]
+    },
+    "progesterone": {
+      "new_tab_url": "about:blank",
+      "html_len": 8641,
+      "all_present": true,
+      "extra_confirmed": ["ng/ml", "Progesterone"]
+    },
+    "cytology_flex": {
+      "new_tab_url": "about:blank",
+      "html_len": 9241,
+      "all_present": true,
+      "extra_confirmed": ["cells"]
+    }
+  },
+  "regression_checks": {
+    "result_screen_stage_banner": "PASS (Late Proestrus rendered with 85% confidence chip)",
+    "result_screen_recommendation_card": "PASS",
+    "result_screen_heat_timeline": "PASS",
+    "result_screen_breeding_schedule": "PASS",
+    "result_screen_cell_counts": "PASS",
+    "whatsapp_button": "PASS — opens new tab (wa.me), no red overlay on original page",
+    "share_button": "PASS — executes without red screen (falls back to clipboard/toast on web)"
+  },
+  "test_report_links": [
+    "/tmp/pdf_newtab.html",
+    "/tmp/pdf_result.png",
+    "/tmp/pdf_dash.png",
+    "/tmp/pdf_newtab.png"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "onPDF() on web path is now correct: window.open first, document.write(html), setTimeout(500ms) then w.focus()+w.print(). Print.printAsync kept only as unreachable-in-practice fallback if window.open returns null (pop-up blocked).",
+    "Native path (Platform.OS !== 'web') unchanged — still uses Print.printToFileAsync + Sharing.shareAsync.",
+    "Toast 'Enable pop-ups to view/print the PDF' correctly wired to the printAsync-catch branch — good UX safety net for pop-up-blocked browsers.",
+    "generateHTML() unchanged; still produces valid branded A4 template for all three eval types."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A (frontend-only)", "frontend": "100% — PDF new-tab flow verified for all 3 eval types + regressions"},
+  "seed_data_creation": "Local-only test dogs Bella, BellaP, BellaF via offline localDB (no backend writes).",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Iter 20 PDF branded-template rendering fix is verified live. window.open + document.write path correctly renders the branded HTML into a new tab for cytology-100, progesterone, and cytology-flex. All 11 required substrings present in every case (Doggy Breeding Guide, Interpretation, Suggestions, ANIMitra Software, DBG-, Signature, BREED, Recommendation, Breeding Schedule, support@animitra.in, Veterinary College and Research Institute, Namakkal). WhatsApp/Share regression clean. No further action required from main agent on this fix.",
+  "rca_of_issue": "Iter 19 RCA (Print.printAsync web stub ignoring html arg) has been correctly mitigated in Iter 20 by moving the window.open+document.write path ahead of any expo-print call on Platform.OS==='web'. Verified by capturing context.expect_page and reading the child tab's content directly."
+}

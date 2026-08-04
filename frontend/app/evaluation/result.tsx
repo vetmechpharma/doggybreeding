@@ -321,30 +321,34 @@ export default function Result() {
     try {
       const html = generateHTML();
       if (Platform.OS === "web") {
-        // expo-print on web returns { html } (no uri) — use printAsync to invoke
-        // the browser's native print dialog which lets the user save as PDF.
-        // Fallback: open a new tab with the HTML for print/save.
+        // On web, expo-print's `printAsync` is a stub (`window.print()`) that
+        // IGNORES the html argument — it prints the current page instead of
+        // our branded template. Bypass it and render the HTML into a new tab
+        // ourselves, then call window.print() from that tab.
+        try {
+          const w = window.open("", "_blank");
+          if (w) {
+            w.document.open();
+            w.document.write(html);
+            w.document.close();
+            setTimeout(() => {
+              try { w.focus(); w.print(); } catch { /* noop */ }
+            }, 500);
+            return;
+          }
+        } catch {
+          /* fallthrough */
+        }
+        // As a last resort, try the built-in dialog (which will print the app UI).
         try {
           await Print.printAsync({ html });
           return;
         } catch {
-          try {
-            const w = window.open("", "_blank");
-            if (w) {
-              w.document.write(html);
-              w.document.close();
-              // Give the tab a moment to load, then trigger print
-              setTimeout(() => { try { w.focus(); w.print(); } catch { /* noop */ } }, 400);
-              return;
-            }
-          } catch {
-            /* fallthrough */
-          }
           toast.show("Enable pop-ups to view/print the PDF", "error");
           return;
         }
       }
-      // Native (iOS / Android)
+      // Native (iOS / Android) — real PDF file, then share.
       const printed = await Print.printToFileAsync({ html });
       const uri = printed?.uri;
       if (!uri) {
